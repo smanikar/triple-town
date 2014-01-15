@@ -46,44 +46,49 @@
 ;                 ... collapse(rest lot) ...]))
 
 (define (collapse lot)
-  (flatten (cond
+  (flatten 
+   (cond
     [(empty? lot) empty]
     [(cons? lot) 
      (cond
-       [(empty? (rest lot)) (cons (first lot) (collapse (rest lot)))]
+       [(empty? (rest lot)) (list (first lot) (collapse (rest lot)))]
        [(cons? (rest lot)) 
         (cond
-          [(empty? (rest (rest lot))) (cons (first lot) (collapse (rest lot)))]
+          [(empty? (rest (rest lot))) (list (first lot) (collapse (rest lot)))]
           [(cons? (rest (rest lot))) 
            (cond
              [(and (symbol=? (first lot) (first (rest lot)))
                    (symbol=? (first (rest lot)) (first (rest (rest lot)))))
-              (cons (cons 'blank (cons (next-tile (first lot)) 'blank)) (collapse (rest (rest (rest lot)))))            
+              (list 'blank (next-tile (first lot)) 'blank (collapse (rest (rest (rest lot)))))            
               ]
-             [else (cons (first lot) (collapse (rest lot)))])])])])))
+             [else (list (first lot) (collapse (rest lot)))])])])])))
 
 (module+ test 
   (check-equal? (collapse empty) empty)
   
-  (check-equal? (collapse (cons 'grass (cons 'grass empty))) 
-                (cons 'grass (cons 'grass empty)))
-  (check-equal? (collapse (cons 'grass (cons 'grass (cons 'blank (cons 'grass empty)))))
-                (cons 'grass (cons 'grass (cons 'blank (cons 'grass empty)))))
+  (check-equal? (collapse (list 'grass))
+                (list 'grass))
+  
+  (check-equal? (collapse (list 'grass 'grass))
+                (list 'grass 'grass))
+  
+  (check-equal? (collapse (list 'grass 'grass 'blank 'grass))
+                (list 'grass 'grass 'blank 'grass))
  
-  (check-equal? (collapse (cons 'grass (cons 'grass (cons 'grass empty))))
-                (cons 'blank (cons 'bush (cons 'blank empty))))
+  (check-equal? (collapse (list 'grass 'grass 'grass))
+                (list 'blank 'bush 'blank))
   
-  (check-equal? (collapse (cons 'grass (cons 'grass (cons 'grass (cons 'tree empty)))))
-                (cons 'blank (cons 'bush (cons 'blank (cons 'tree empty)))))
+  (check-equal? (collapse (list 'grass 'grass 'grass 'tree))
+                (list 'blank 'bush 'blank 'tree))
   
-  (check-equal? (collapse (cons 'tree (cons 'grass (cons 'grass (cons 'grass (cons 'tree empty))))))
-                (cons 'tree (cons 'blank (cons 'bush (cons 'blank (cons 'tree empty))))))
+  (check-equal? (collapse (list 'tree 'grass 'grass 'grass 'tree))
+                (list 'tree 'blank 'bush 'blank 'tree)
   
-  (check-equal? (collapse (cons 'blank (cons 'bush (cons 'bush (cons 'bush empty)))))
-               (cons 'blank (cons 'blank (cons 'tree (cons 'blank empty)))))
+  (check-equal? (collapse (list 'blank 'bush 'bush 'bush))
+                (list 'blank 'blank 'tree 'blank)))
   
-  (check-equal? (collapse (cons 'tree (cons 'grass (cons 'grass (cons 'grass (cons 'tree (cons 'tree (cons 'tree empty))))))))
-                (cons 'tree (cons 'blank (cons 'bush (cons 'blank (cons 'blank (cons 'shack (cons 'blank empty))))))))
+  (check-equal? (collapse (list 'tree 'grass 'grass 'grass 'tree 'tree 'tree))
+                (list 'tree 'blank 'bush 'blank 'blank 'shack 'blank))
   )
 
 
