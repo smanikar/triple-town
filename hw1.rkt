@@ -1,8 +1,11 @@
 #lang racket
 (require rackunit)
 
+; Task for 1/22
+; function that takes a move and put it on the board and makes a collapse
+
 ; A tile is either
-  ;   - 'blank
+  ;   - 'blank 
   ;   - 'grass
   ;   - 'bush
   ;   - 'tree
@@ -23,6 +26,7 @@
     [(symbol=? cur-tile 'house) 'mansion]
     [(symbol=? cur-tile 'mansion) 'castle]
     [else 'bad-input]
+    ;(error (format "not a tile: ~s~n" cur-tile)
     ))
 
 (module+ test 
@@ -46,22 +50,23 @@
 ;                 ... collapse(rest lot) ...]))
 
 (define (collapse lot)
-  (flatten 
    (cond
     [(empty? lot) empty]
     [(cons? lot) 
      (cond
-       [(empty? (rest lot)) (list (first lot) (collapse (rest lot)))]
+       [(empty? (rest lot)) (cons (first lot) (collapse (rest lot)))]
        [(cons? (rest lot)) 
         (cond
-          [(empty? (rest (rest lot))) (list (first lot) (collapse (rest lot)))]
+          [(empty? (rest (rest lot))) (cons (first lot) (collapse (rest lot)))]
           [(cons? (rest (rest lot))) 
            (cond
              [(and (symbol=? (first lot) (first (rest lot)))
                    (symbol=? (first (rest lot)) (first (rest (rest lot)))))
-              (list 'blank (next-tile (first lot)) 'blank (collapse (rest (rest (rest lot)))))            
-              ]
-             [else (list (first lot) (collapse (rest lot)))])])])])))
+              (list* 'blank (next-tile (first lot)) 'blank 
+                     (collapse (rest (rest (rest lot)))))]
+             [else (cons (first lot) (collapse (rest lot)))])])])])
+  ; )
+)
 
 (module+ test 
   (check-equal? (collapse empty) empty)
@@ -90,6 +95,3 @@
   (check-equal? (collapse (list 'tree 'grass 'grass 'grass 'tree 'tree 'tree))
                 (list 'tree 'blank 'bush 'blank 'blank 'shack 'blank))
   )
-
-
-
