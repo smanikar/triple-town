@@ -11,7 +11,7 @@
   ;   - 'mansion
   ;   - 'castle
 
-; next-tile : string -> string
+; next-tile : symbol -> symbol
 ; Gets the next tile of cur-tile
 (define (next-tile cur-tile)
   (cond
@@ -25,6 +25,9 @@
     [else 'bad-input]
     ))
 
+
+
 (module+ test 
   (check-equal? (next-tile 'blank) 'grass)
   (check-equal? (next-tile 'test) 'bad-input))
+
