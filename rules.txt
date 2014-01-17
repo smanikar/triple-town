@@ -1,0 +1,10 @@
+1. Finding relevant neighbours
+Directions
+NW  N NE
+ W  X  E
+SW  S SE
+
+If north is true, then check NW and NE
+If south is true, then check SW and SE
+If east  is true, then check NE and SE
+If west  is true, then check NW and SW
