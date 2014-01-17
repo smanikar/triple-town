@@ -43,7 +43,7 @@
 
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile ((val #:mutalbe) x y (chk #:mutable)))
+(define-struct tile ((val #:mutable) x y (chk #:mutable)))
 
 ; A board is a list-of-list-of-tile
 ; (define board1
