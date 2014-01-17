@@ -26,8 +26,7 @@
     [(symbol=? cur-tile 'shack) 'house]
     [(symbol=? cur-tile 'house) 'mansion]
     [(symbol=? cur-tile 'mansion) 'castle]
-    [else (error (format "not a tile: ~s~n" cur-tile))]
-    ))
+    [else (error (format "not a tile: ~s~n" cur-tile))]))
 
 (module+ test 
   (check-equal? (next-tile 'grass) 'bush)
@@ -44,7 +43,7 @@
 
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile (val x y (chk #:mutable)))
+(define-struct tile ((val #:mutalbe) x y (chk #:mutable)))
 
 ; A board is a list-of-list-of-tile
 ; (define board1
@@ -104,13 +103,60 @@
 ;Replace this tile with 'next-tile'
 
 (define (replace-neighbour board x y)
-  ...)
+  (cond
+    [(empty? board) empty]
+    [(cons? board) 
+      (cons (replace-row(first board) x y)
+            (replace-neighbour (rest board) x y))]))
 
 (module+ test 
   (check-equal? (replace-neighbour board1 0 0) board1a)
-  (check-equal? (replace-neighbour board1 1 0) board1)
+  ;(check-equal? (replace-neighbour board1 1 0) board1)
   ) 
+; replace-row list-of-tiles num num -> list-of-tiles
+; Find and replace all visited tiles with blank except ('x', 'y')
 
+(define (replace-row row x y)
+  (cond
+    [(empty? row) empty]
+    [(cons? row) 
+     (cond 
+       [(tile-chk(first row)) 
+        (cond 
+          [(and (=? (tile-x (first row)) x)
+                (=? (tile-y (first row)) y))
+           (list* (tile (next-tile (tile-val (first row))) x y #t) 
+                  (replace-row(rest row) x y))]
+          ;(set-tile-val! (first row) (next-tile (tile-val (first row))))]                  
+          [else  (list* (tile 'blank x y #t) 
+                        (replace-row(rest row) x y))])]
+       [else (list* (tile (tile-val (first row)) 
+                          (tile-x (first row))
+                          (tile-y (first row))
+                          (tile-chk (first row)))
+                    (replace-row(rest row) x y))])]))
+     
+(module+ test
+  (check-equal? (replace-row empty 0 0) emtpy)
+  (check-equal? (replace-row (list (tile 'grass 0 0 #f) 
+                                   (tile 'bush  0 1 #t)
+                                   (tile 'bush  0 2 #t)) 0 1)
+                (list (tile 'grass 0 0 #f)
+                      (tile 'tree  0 1 #t)
+                      (tile 'blank 0 2 #t)))
+  (check-equal? (replace-row (list (tile 'blank 1 0 #f) 
+                                   (tile 'grass 1 1 #t)
+                                   (tile 'blank 1 2 #t)) 1 1)
+                (list (tile 'blank 1 0 #f) 
+                      (tile 'tree  1 1 #t)
+                      (tile 'blank 1 2 #t)))
+  (check-equal? (replace-row (list (tile 'blank 2 0 #f) 
+                                   (tile 'blank 2 1 #t)
+                                   (tile 'blank 2 2 #t)) 2 2)
+                (list (tile 'blank 2 0 #f) 
+                      (tile 'blank 2 1 #t)
+                      (tile 'blank 2 2 #t))))
+ 
 ;count-neighbour :  list-of-list-of-tile num num num -> num
 ;Returns 'count', the number of relevant neighbouring tiles of ('x','y') that are same
 ;Algo-
@@ -211,7 +257,7 @@
 (module+ test 
   (check-equal? (count-neighbour board1 0 0) 2)
   (check-equal? (count-neighbour board1 1 0) 1)
-  ) 
+  )
 
 ;collapse-tile : list-of-list-of-tile num num -> list-of-list-of-tile
 ;Collapses all neighbours of ('x','y') based on 'val' of 'tile'('x','y') in 'board'
