@@ -65,13 +65,14 @@
 
 ;get-tile: list-of-list-of-tiles num num -> tile
 ; Returns the 'tile' with coordinates ('x','y') on 'board'
+
 (define (get-tile board x y)
-  (list-ref (list-ref board x) y))
+  (list-ref (list-ref board y) x))
 
 (module+ test 
-  (check-equal? (get-tile board1  1 0) (tile 'grass 1 0))
-  (check-equal? (get-tile board1a 1 0) (tile 'blank 1 0))
-  ) 
+  (check-equal? (get-tile board1  0 1) (tile 'grass 0 1 #t))
+  (check-equal? (get-tile board1a 0 1) (tile 'blank 0 1 #t))
+  )
 
 ;on-board : list-of-list-of-tiles num num -> bool
 ;Checks if a given tile ('x','y') is on the 'board'
