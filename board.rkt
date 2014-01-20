@@ -155,12 +155,67 @@
   )
 
 
+; valid-neighbour? : list-of-list-of-tile num num symbol -> boolean
+; Checks if a given tile is a valid neighbour based on 'val'
+(define (valid-neighbour? board x y val)
+  (if (on-board? board x y)
+      (if (and (symbol=? (tile-val(get-tile board x y)) val)
+               (not (tile-chk (get-tile board x y))))
+          #t #f)
+      #f))
+
+;count-neighbour :  list-of-list-of-tile num num num -> num
+;Returns 'count', the number of relevant neighbouring tiles of ('x','y') that are same
+;Algo-
+;Increment count
+;Mark (x,y) as visited
+;Visit all the valid neighbouring tiles(8) and call count-neighbour
+
 (define (count-neighbour board x y c)
-  c)
-;(module+ test 
-;  (check-equal? (count-neighbour board1 0 0) 2)
-;  (check-equal? (count-neighbour board1 1 0) 1)
-;  )
+  (cond
+    [(empty? board) 0]
+    [else
+     (set! c (add1 c))
+     (set-tile-chk! (get-tile board x y) #t)
+     (define this-tile (struct-copy tile (get-tile board x y)))
+     
+     (cond 
+       ;north
+       [(valid-neighbour? board x (- y 1) (tile-val this-tile))
+        (set! c (count-neighbour board x (- y 1) c))c]
+       ;south
+       [(valid-neighbour? board x (+ y 1) (tile-val this-tile))
+        (set! c (count-neighbour board x (+ y 1) c))c]
+       ;east
+       [(valid-neighbour? board (+ x 1) y (tile-val this-tile))
+        (set! c (count-neighbour board (+ x 1) y c))c]
+       ;west
+       [(valid-neighbour? board (- x 1) y (tile-val this-tile))
+        (set! c (count-neighbour board (- x 1) y c))c]
+       ;north-east
+       [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
+        (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
+       ;north-west
+       [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+        (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+       ;south-east
+       [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
+        (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
+       ;south-west
+       [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+        (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+       [else c])]))
+ 
+
+(module+ test 
+  ;(check-equal? (count-neighbour empty 0 0 0) 0)
+  ;(check-equal? (count-neighbour (cons (cons (tile 'grass 0 0 #f) empty) empty) 0 0 0) 1)
+;  (check-equal? (count-neighbour (list (list (tile 'grass 0 0 #f) (tile 'grass 1 0 #f))
+;                                        (list (tile 'blank 0 1 #f) (tile 'blank 1 1 #f)))
+;                                 0 0 0) 2)
+    (check-equal? (count-neighbour board1b 0 0 0) 3)
+    (check-equal? (count-neighbour board1 1 0 0) 1)
+  )
 
 ;collapse-tile : list-of-list-of-tile num num -> list-of-list-of-tile
 ;Collapses all neighbours of ('x','y') based on 'val' of 'tile'('x','y') in 'board'
