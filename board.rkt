@@ -79,14 +79,17 @@
 
 (define (on-board? board x y)
   (cond
-    [(and (and (< x (- board-size 1)) (> x -1))
-           (and (< y (- board-size 1)) (> y -1))) #t]
+    [(empty? board) #f]
+    [(and (and (< x (- board-size 1)) (> x -1)) 
+          (and (< y (- board-size 1)) (> y -1))) #t]
     [else #f]))
 
-(module+ test 
+(module+ test
+  (check-equal? (on-board? empty  1 0) #f)
   (check-equal? (on-board? board1  1 0) #t)
-  (check-equal? (get-tile board1a 1 8) #f)
-  ) 
+  (check-equal? (on-board? board1a 1 8) #f)
+  (check-equal? (on-board? board1  -1 0) #f)
+  )
 
 ;replace-neighbours : list-of-list-of-tiles num num -> list-of-list-of-tiles
 ;Finds and replaces all neighbours of ('x','y') on 'board' with higher field
