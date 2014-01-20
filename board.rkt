@@ -91,6 +91,50 @@
   (check-equal? (on-board? board1  -1 0) #f)
   )
 
+; replace-neighbour-row list-of-tiles num num -> list-of-tiles
+; Find and replace all visited tiles with blank except ('x', 'y')
+
+(define (replace-neighbour-row row x y)
+  (cond
+    [(empty? row) empty]
+    [(cons? row) 
+     (cond 
+       [(tile-chk (first row)) 
+        (cond 
+          [(and (equal? (tile-x (first row)) x)
+                (equal? (tile-y (first row)) y))
+           (list* (tile (next-tile (tile-val (first row))) x y #t)
+                  (replace-neighbour-row (rest row) x y))]
+          [else  (list* (tile 'blank 
+                              (tile-x (first row)) 
+                              (tile-y (first row)) 
+                              #t) 
+                        (replace-neighbour-row (rest row) x y))])]
+       [else (list* (tile (tile-val (first row)) 
+                          (tile-x (first row))
+                          (tile-y (first row))
+                          (tile-chk (first row)))
+                    (replace-neighbour-row (rest row) x y))])]))
+
+(module+ test
+  (check-equal? (replace-neighbour-row empty 0 0) empty)
+  (check-equal? (replace-neighbour-row (list (tile 'grass 0 0 #f) 
+                                             (tile 'bush  0 1 #t)
+                                             (tile 'bush  0 2 #t)) 0 1)
+                (list (tile 'grass 0 0 #f)
+                      (tile 'tree  0 1 #t)
+                      (tile 'blank 0 2 #t)))
+  (check-equal? (replace-neighbour-row (list (tile 'blank 1 0 #f) 
+                                             (tile 'bush 1 1 #t)
+                                             (tile 'blank 1 2 #t)) 1 1)
+                (list (tile 'blank 1 0 #f) 
+                      (tile 'tree  1 1 #t)
+                      (tile 'blank 1 2 #t)))
+  (check-error (replace-neighbour-row (list (tile 'blank 2 0 #f) 
+                                            (tile 'blank 2 1 #t)
+                                            (tile 'blank 2 2 #t)) 2 2)
+               "not a tile: blank"))
+
 ;replace-neighbours : list-of-list-of-tiles num num -> list-of-list-of-tiles
 ;Finds and replaces all neighbours of ('x','y') on 'board' with higher field
 ;Algo -
