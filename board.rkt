@@ -43,34 +43,26 @@
 
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile ((val #:mutable) x y (chk #:mutable)))
-
-; A board is a list-of-list-of-tile
-; (define board1
-;   (list
-;    (list (tile 'grass 1 1) (tile 'grass 1 2) (tile 'blank 1 3))
-;    (list (tile 'grass 2 1) (tile 'blank 2 2) (tile 'blank 2 3))
-;    (list (tile 'blank 3 1) (tile 'blank 3 2) (tile 'blank 3 3))))
-
-
-; (define board1a
-;   (list
-;    (list (tile 'grass 1 1) (tile 'blank 1 2) (tile 'blank 1 3))
-;    (list (tile 'blank 2 1) (tile 'blank 2 2) (tile 'blank 2 3))
-;    (list (tile 'blank 3 1) (tile 'blank 3 2) (tile 'blank 3 3))))
+(define-struct tile ((val) x y (chk #:mutable)) #:transparent)
 
 (define board1
   (list
-   (list (tile 'grass 0 0) (tile 'grass 0 1) (tile 'blank 0 2))
-   (list (tile 'grass 1 0) (tile 'blank 1 1) (tile 'blank 1 2))
-   (list (tile 'blank 2 0) (tile 'blank 2 1) (tile 'blank 2 2))))
+   (list (tile 'grass 0 0 #t) (tile 'grass 1 0 #t) (tile 'blank 2 0 #f))
+   (list (tile 'grass 0 1 #t) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
+   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
+
+(define board1b
+  (list
+   (list (tile 'grass 0 0 #f) (tile 'grass 1 0 #f) (tile 'blank 2 0 #f))
+   (list (tile 'grass 0 1 #f) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
+   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
 
 (define board1a
   (list
-   (list (tile 'bush  0 0) (tile 'blank 0 1) (tile 'blank 0 2))
-   (list (tile 'blank 1 0) (tile 'blank 1 1) (tile 'blank 1 2))
-   (list (tile 'blank 2 0) (tile 'blank 2 1) (tile 'blank 2 2))))
-  
+   (list (tile 'bush  0 0 #t) (tile 'blank 1 0 #t) (tile 'blank 2 0 #f))
+   (list (tile 'blank 0 1 #t) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
+   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
+
 ;get-tile: list-of-list-of-tiles num num -> tile
 ; Returns the 'tile' with coordinates ('x','y') on 'board'
 (define (get-tile board x y)
@@ -127,7 +119,7 @@
                 (=? (tile-y (first row)) y))
            (list* (tile (next-tile (tile-val (first row))) x y #t) 
                   (replace-row(rest row) x y))]
-          ;(set-tile-val! (first row) (next-tile (tile-val (first row))))]                  
+          ;(set-tile-val! (first row) (next-tile (tile-val (first row))))]
           [else  (list* (tile 'blank x y #t) 
                         (replace-row(rest row) x y))])]
        [else (list* (tile (tile-val (first row)) 
