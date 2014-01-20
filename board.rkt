@@ -146,13 +146,14 @@
   (cond
     [(empty? board) empty]
     [(cons? board) 
-      (cons (replace-row(first board) x y)
-            (replace-neighbour (rest board) x y))]))
+     (cons (replace-neighbour-row(first board) x y)
+           (replace-neighbour (rest board) x y))]))
 
 (module+ test 
   (check-equal? (replace-neighbour board1 0 0) board1a)
   ;(check-equal? (replace-neighbour board1 1 0) board1)
-  ) 
+  )
+
 ; replace-row list-of-tiles num num -> list-of-tiles
 ; Find and replace all visited tiles with blank except ('x', 'y')
 
