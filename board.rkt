@@ -45,9 +45,9 @@
 
 (define game-board
   (list
-   (list (tile 'grass 0 0 #t) (tile 'blank 1 0 #t) (tile 'grass 2 0 #f))
+   (list (tile 'grass 0 0 #t) (tile 'grass 1 0 #t) (tile 'grass 2 0 #f))
    (list (tile 'blank 0 1 #t) (tile 'grass 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'grass 0 2 #f) (tile 'blank 1 2 #f) (tile 'grass 2 2 #f))))
+   (list (tile 'grass 0 2 #f) (tile 'grass 1 2 #f) (tile 'grass 2 2 #f))))
 
 (define board-size (length game-board))
 
@@ -158,34 +158,81 @@
      (set! c (add1 c))
      (set-tile-chk! (get-tile board x y) #t)
      (define this-tile (struct-copy tile (get-tile board x y)))
-     
+     ;north
      (cond 
-       ;north
        [(valid-neighbour? board x (- y 1) (tile-val this-tile))
-        (set! c (count-neighbour board x (- y 1) c))c]
-       ;south
+        (set! c (count-neighbour board x (- y 1) c))
+        
+        ;north-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
+           (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
+          [else c])
+        
+        ;north-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+          [else c])
+        c]
+       [else c])
+     
+     ;south
+     (cond
        [(valid-neighbour? board x (+ y 1) (tile-val this-tile))
-        (set! c (count-neighbour board x (+ y 1) c))c]
+        (set! c (count-neighbour board x (+ y 1) c))
+        
+        ;south-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
+           (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
+          [else c])
+        
+        ;south-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+          [else c])
+        c]
+       [else c])
+     
        ;east
-       [(valid-neighbour? board (+ x 1) y (tile-val this-tile))
-        (set! c (count-neighbour board (+ x 1) y c))c]
+       (cond
+         [(valid-neighbour? board (+ x 1) y (tile-val this-tile))
+          (set! c (count-neighbour board (+ x 1) y c))
+          
+          ;north-east
+          (cond
+            [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
+             (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
+            [else c])
+          
+          ;south-east
+          (cond
+            [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
+             (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
+            [else c])
+          c]
+         [else c])
+       
        ;west
-       [(valid-neighbour? board (- x 1) y (tile-val this-tile))
-        (set! c (count-neighbour board (- x 1) y c))c]
-       ;north-east
-       [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
-        (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
-       ;north-west
-       [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-        (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-       ;south-east
-       [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
-        (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
-       ;south-west
-       [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-        (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-       [else c])]))
- 
+       (cond
+         [(valid-neighbour? board (- x 1) y (tile-val this-tile))
+          (set! c (count-neighbour board (- x 1) y c))
+          
+          ;north-west
+          (cond
+            [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+             (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+            [else c])
+          
+          ;south-west
+          (cond
+            [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
+             (set! c (count-neighbour board (- x 1) (- y 1) c))c]
+            [else c])
+          c]
+         [else c])]))
 
 ; reset-check-row : list-of-tiles -> list-of-tiles
 ; Resets all check fields in 'row' to #f
@@ -231,6 +278,7 @@
             empty))
       lot))
    game-board))
+
 (printf "Before collapse \n")
 (printf "~a \n" game-board)
 (collapse-board)
