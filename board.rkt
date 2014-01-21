@@ -231,7 +231,8 @@
             empty))
       lot))
    game-board))
-
-(print game-board)
+(printf "Before collapse \n")
+(printf "~a \n" game-board)
 (collapse-board)
-(print game-board)
+(printf "After collapse \n")
+(printf "~a \n" game-board)
