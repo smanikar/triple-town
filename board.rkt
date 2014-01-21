@@ -162,76 +162,56 @@
      (cond 
        [(valid-neighbour? board x (- y 1) (tile-val this-tile))
         (set! c (count-neighbour board x (- y 1) c))
-        
         ;north-east
         (cond
           [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
-           (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
-          [else c])
-        
+           (set! c (count-neighbour board (+ x 1) (- y 1) c))c])
         ;north-west
         (cond
           [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-           (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-          [else c])
-        c]
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
        [else c])
      
      ;south
      (cond
        [(valid-neighbour? board x (+ y 1) (tile-val this-tile))
         (set! c (count-neighbour board x (+ y 1) c))
-        
         ;south-east
         (cond
           [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
-           (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
-          [else c])
-        
+           (set! c (count-neighbour board (+ x 1) (+ y 1) c))c])
         ;south-west
         (cond
           [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-           (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-          [else c])
-        c]
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
        [else c])
      
        ;east
        (cond
          [(valid-neighbour? board (+ x 1) y (tile-val this-tile))
           (set! c (count-neighbour board (+ x 1) y c))
-          
           ;north-east
           (cond
             [(valid-neighbour? board (+ x 1) (- y 1) (tile-val this-tile))
-             (set! c (count-neighbour board (+ x 1) (- y 1) c))c]
-            [else c])
-          
+             (set! c (count-neighbour board (+ x 1) (- y 1) c))c])
           ;south-east
           (cond
             [(valid-neighbour? board (+ x 1) (+ y 1) (tile-val this-tile))
-             (set! c (count-neighbour board (+ x 1) (+ y 1) c))c]
-            [else c])
-          c]
+             (set! c (count-neighbour board (+ x 1) (+ y 1) c))c])]
          [else c])
        
        ;west
        (cond
          [(valid-neighbour? board (- x 1) y (tile-val this-tile))
           (set! c (count-neighbour board (- x 1) y c))
-          
           ;north-west
           (cond
             [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-             (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-            [else c])
-          
+             (set! c (count-neighbour board (- x 1) (- y 1) c))c])
           ;south-west
           (cond
             [(valid-neighbour? board (- x 1) (- y 1) (tile-val this-tile))
-             (set! c (count-neighbour board (- x 1) (- y 1) c))c]
-            [else c])
-          c]
+             (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
          [else c])]))
 
 ; reset-check-row : list-of-tiles -> list-of-tiles
@@ -278,6 +258,8 @@
             empty))
       lot))
    game-board))
+
+
 
 (printf "Before collapse \n")
 (printf "~a \n" game-board)
