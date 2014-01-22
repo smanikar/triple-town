@@ -41,7 +41,7 @@
 
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile ((val) x y (chk #:mutable)) #:transparent)
+(define-struct tile ((val #:mutable) x y (chk #:mutable)) #:transparent)
 
 (define game-board
   (list
@@ -117,7 +117,6 @@
                           (tile-chk (first row)))
                     (replace-neighbour-row (rest row) x y))])]))
 
-
 ;replace-neighbours : list-of-list-of-tiles num num -> list-of-list-of-tiles
 ;Finds and replaces all neighbours of ('x','y') on 'board' with higher field
 ;Algo -
@@ -131,7 +130,6 @@
     [(cons? board) 
      (cons (replace-neighbour-row(first board) x y)
            (replace-neighbour (rest board) x y))]))
-
 
 ; valid-neighbour? : list-of-list-of-tile num num symbol -> boolean
 ; Checks if a given tile is a valid neighbour based on 'val'
@@ -236,11 +234,22 @@
     [(cons? board) (cons (reset-check-row (first board))
                          (reset-check (rest board)))]))
 
+; collapse-board : list-of-list-of-tile num num -> boolean
+; Collapse all possible 3 or more occurances of 'val' into next 'val' for ('x','y')
+; Returns if collapse was successful
+
+(define (collapse-board board x y)
+  (set! game-board (reset-check game-board))
+  (cond 
+    [(> (count-neighbour game-board x y 0) 2)
+     (set! game-board 
+           (replace-neighbour game-board x y)) #t]
+    [else #f]))
 
 ; collapse-board : list-of-list-of-tile -> void
 ; Collapse all possible 3 or more occurances of 'val' into next 'val' in 'board'
 
-(define (collapse-board)
+(define (collapse-board-init)
   (for-each 
    (lambda (lot)
      (for-each
@@ -259,10 +268,56 @@
       lot))
    game-board))
 
+;place-tile-board : list-of-list-of-tiles, tile -> list-of-list-of-tiles
+;Places tile on board
+(define (place-tile-board board in-tile)
+  (set-tile-val! (get-tile board (tile-x in-tile) (tile-y in-tile)) (tile-val in-tile)))
 
+; place-tile : tile, list-of-list-of-tiles -> boolean
+; Places on board and returns if place-tile was successful
+(define (place-tile in-tile board)
+  (cond 
+    [(symbol=? (tile-val (get-tile board (tile-x in-tile) (tile-y in-tile))) 'blank)
+     ;(set! board (place-tile-board board in-tile)) #t]
+     (place-tile-board board in-tile) #t]
+    [else #f]))
 
+(define (display-board-row row)
+  (cond
+    [(empty? row) empty]
+    [(cons? row)
+     (printf " ~a " (tile-val (first row)))
+     (display-board-row (rest row))]))
+
+(define (display-board board)
+  (cond
+    [(empty? board) empty]
+    [(cons? board)
+     (display-board-row (first board))
+     (printf "\n")
+     (display-board (rest board))]))
+  
 (printf "Before collapse \n")
-(printf "~a \n" game-board)
-(collapse-board)
+(display-board game-board)
+
+(collapse-board-init)
+
 (printf "After collapse \n")
-(printf "~a \n" game-board)
+(display-board game-board)
+
+(printf "Place tile 'grass at (2 2) - ")
+(place-tile (tile 'grass 2 2 #f) game-board)
+(printf "Collapse (2 2) - ")
+(collapse-board game-board 2 2)
+
+(printf "Place tile 'grass at (2 1) - ")
+(place-tile (tile 'grass 2 1 #f) game-board)
+(printf "Collapse (2 2) - ")
+(collapse-board game-board 2 1)
+
+(printf "Place tile 'grass at (1 2) - ")
+(place-tile (tile 'grass 1 2 #f) game-board)
+(printf "Collapse (1 2) - ")
+(collapse-board game-board 1 2)
+
+(display-board game-board)

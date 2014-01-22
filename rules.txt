@@ -10,7 +10,7 @@ If east  is true, then check NE and SE
 If west  is true, then check NW and SW
 
 1. Add rule 1 - Completed
-2. Read from user and collapse
+2. Read from user and collapse - Completed
 3. CLI for read
 4. Automate game-board population
 5. Presentation
