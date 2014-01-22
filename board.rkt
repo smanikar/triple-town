@@ -45,40 +45,17 @@
 
 (define game-board
   (list
-   (list (tile 'grass 0 0 #t) (tile 'grass 1 0 #t) (tile 'grass 2 0 #f))
+   (list (tile 'blank 0 0 #t) (tile 'blank 1 0 #t) (tile 'blank 2 0 #f))
    (list (tile 'blank 0 1 #t) (tile 'grass 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'grass 0 2 #f) (tile 'grass 1 2 #f) (tile 'grass 2 2 #f))))
+   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
 
 (define board-size (length game-board))
-
-(define board1
-  (list
-   (list (tile 'grass 0 0 #t) (tile 'grass 1 0 #t) (tile 'blank 2 0 #f))
-   (list (tile 'grass 0 1 #t) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
-
-(define board1b
-  (list
-   (list (tile 'grass 0 0 #f) (tile 'grass 1 0 #f) (tile 'blank 2 0 #f))
-   (list (tile 'grass 0 1 #f) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
-
-(define board1a
-  (list
-   (list (tile 'bush  0 0 #t) (tile 'blank 1 0 #t) (tile 'blank 2 0 #f))
-   (list (tile 'blank 0 1 #t) (tile 'blank 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
 
 ;get-tile: list-of-list-of-tiles num num -> tile
 ; Returns the 'tile' with coordinates ('x','y') on 'board'
 
 (define (get-tile board x y)
   (list-ref (list-ref board y) x))
-
-(module+ test 
-  (check-equal? (get-tile board1  0 1) (tile 'grass 0 1 #t))
-  (check-equal? (get-tile board1a 0 1) (tile 'blank 0 1 #t))
-  )
 
 ;on-board : list-of-list-of-tiles num num -> bool
 ;Checks if a given tile ('x','y') is on the 'board'
@@ -297,27 +274,27 @@
      (printf "\n")
      (display-board (rest board))]))
   
-(printf "Before collapse \n")
-(display-board game-board)
+;(printf "Before collapse \n")
+;(display-board game-board)
+;(collapse-board-init)
+;(printf "After collapse \n")
 
-(collapse-board-init)
-
-(printf "After collapse \n")
 (display-board game-board)
 
 (printf "Place tile 'grass at (2 2) - ")
 (place-tile (tile 'grass 2 2 #f) game-board)
 (printf "Collapse (2 2) - ")
 (collapse-board game-board 2 2)
+(display-board game-board)
 
 (printf "Place tile 'grass at (2 1) - ")
 (place-tile (tile 'grass 2 1 #f) game-board)
 (printf "Collapse (2 2) - ")
 (collapse-board game-board 2 1)
+(display-board game-board)
 
 (printf "Place tile 'grass at (1 2) - ")
 (place-tile (tile 'grass 1 2 #f) game-board)
 (printf "Collapse (1 2) - ")
 (collapse-board game-board 1 2)
-
 (display-board game-board)
