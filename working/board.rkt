@@ -211,39 +211,19 @@
     [(cons? board) (cons (reset-check-row (first board))
                          (reset-check (rest board)))]))
 
-; collapse-board : list-of-list-of-tile num num -> boolean
+; collapse-board : list-of-list-of-tile num num -> boolean [board-or-#f]
 ; Collapse all possible 3 or more occurances of 'val' into next 'val' for ('x','y')
 ; Returns if collapse was successful
 
 (define (collapse-board board x y)
-  (set! game-board (reset-check game-board))
-  (cond 
-    [(> (count-neighbour game-board x y 0) 2)
-     (set! game-board 
-           (replace-neighbour game-board x y)) #t]
-    [else #f]))
-
-; collapse-board : list-of-list-of-tile -> void
-; Collapse all possible 3 or more occurances of 'val' into next 'val' in 'board'
-
-(define (collapse-board-init)
-  (for-each 
-   (lambda (lot)
-     (for-each
-      (lambda (tile)
-        (set! game-board (reset-check game-board))
-        (if (not (symbol=? (tile-val tile) 'blank))
-            (if (> (count-neighbour game-board
-                                    (tile-x tile)
-                                    (tile-y tile)
-                                    0)
-                   2)
-                (set! game-board 
-                      (replace-neighbour game-board (tile-x tile) (tile-y tile)))
-                empty)
-            empty))
-      lot))
-   game-board))
+  (let-values ([(b n) (count-neighbour (reset-check board) x y 0)])
+    (cond 
+      [(> n 2)
+       (cond 
+         [(replace-neighbour b x y) #t]
+         [else #f])]
+      [else #f])))
+           
 
 ;place-tile-board : list-of-list-of-tiles, tile -> list-of-list-of-tiles
 ;Places tile on board
@@ -255,7 +235,6 @@
 (define (place-tile in-tile board)
   (cond 
     [(symbol=? (tile-val (get-tile board (tile-x in-tile) (tile-y in-tile))) 'blank)
-     ;(set! board (place-tile-board board in-tile)) #t]
      (place-tile-board board in-tile) #t]
     [else #f]))
 
