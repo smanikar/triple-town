@@ -81,14 +81,14 @@
           [(and (equal? (tile-x (first row)) x)
                 (equal? (tile-y (first row)) y)
                 (not (symbol=? (tile-val (first row)) 'blank)))
-           (list* (tile (next-tile (tile-val (first row))) x y #t)
+           (cons (tile (next-tile (tile-val (first row))) x y #t)
                   (replace-neighbour-row (rest row) x y))]
-          [else  (list* (tile 'blank 
+          [else  (cons (tile 'blank 
                               (tile-x (first row)) 
                               (tile-y (first row)) 
                               #t) 
                         (replace-neighbour-row (rest row) x y))])]
-       [else (list* (tile (tile-val (first row)) 
+       [else (cons (tile (tile-val (first row)) 
                           (tile-x (first row))
                           (tile-y (first row))
                           (tile-chk (first row)))
@@ -223,19 +223,36 @@
          [(replace-neighbour b x y) #t]
          [else #f])]
       [else #f])))
-           
+
+;place-tile-board-row : list-of-tiles, tile -> list-of-tiles
+;Place tile on row
+(define (place-tile-row r v x y)
+  (cond
+    [(empty? r)  empty]
+    [(cons? r) 
+     (cond
+      [(and (equal? (tile-x (first r)) x)
+            (equal? (tile-y (first r)) y))
+       (list* (tile v (tile-x (first r)) (tile-y (first r)) #f)
+             (place-tile-row (rest r) v x y))]
+      [else (list* (first r) 
+                  (place-tile-row (rest r) v x y))])]))
 
 ;place-tile-board : list-of-list-of-tiles, tile -> list-of-list-of-tiles
 ;Places tile on board
-(define (place-tile-board board in-tile)
-  (set-tile-val! (get-tile board (tile-x in-tile) (tile-y in-tile)) (tile-val in-tile)))
+(define (place-tile b v x y)
+  (cond
+    [(empty? b) empty]
+    [(cons? b) 
+     (list* (place-tile-row (first b) v x y)
+           (place-tile (rest b) v x y))]))
 
-; place-tile : tile, list-of-list-of-tiles -> boolean
+; place-tile-on : tile, list-of-list-of-tiles -> boolean
 ; Places on board and returns if place-tile was successful
-(define (place-tile in-tile board)
+(define (place-tile-on b v x y)
   (cond 
-    [(symbol=? (tile-val (get-tile board (tile-x in-tile) (tile-y in-tile))) 'blank)
-     (place-tile-board board in-tile) #t]
+    [(symbol=? (tile-val (get-tile b (tile-x t) (tile-y t))) 'blank)
+     (place-tile b v x y)]
     [else #f]))
 
 (define (display-board-row row)
