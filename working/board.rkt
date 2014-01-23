@@ -41,7 +41,7 @@
 
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile ((val #:mutable) x y (chk #:mutable)) #:transparent)
+(define-struct tile (v x y c #:transparent)
 
 (define game-board
   (list
@@ -247,7 +247,7 @@
      (list* (place-tile-row (first b) v x y)
            (place-tile (rest b) v x y))]))
 
-; place-tile-on : tile, list-of-list-of-tiles -> boolean
+; place-tile-on : tile, list-of-list-of-tiles -> boolean [board-or-#f]
 ; Places on board and returns if place-tile was successful
 (define (place-tile-on b v x y)
   (cond 
