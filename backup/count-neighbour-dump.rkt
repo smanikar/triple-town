@@ -275,3 +275,74 @@
     [(cons? row) 
      ... (first row) ...
      (count-neighbour-row x y (rest row) c) ...]))
+
+;count-neighbour :  list-of-list-of-tile num num num -> num
+;Returns 'count', the number of relevant neighbouring tiles of ('x','y') 
+; that are same
+;Algo-
+;Increment count
+;Mark (x,y) as visited
+;Visit all the valid neighbouring tiles(8) and call count-neighbour
+
+(define (count-neighbour board x y c)
+  (cond
+    [(empty? board) 0]
+    [else
+     (set! c (add1 c))
+     (set-tile-c! (get-tile board x y) #t)
+     (define this-tile (struct-copy tile (get-tile board x y)))
+     ;north
+     (cond 
+       [(valid-neighbour? board x (- y 1) (tile-v this-tile))
+        (set! c (count-neighbour board x (- y 1) c))
+        ;north-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (+ x 1) (- y 1) c))c])
+        ;north-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
+       [else c])
+     
+     ;south
+     (cond
+       [(valid-neighbour? board x (+ y 1) (tile-v this-tile))
+        (set! c (count-neighbour board x (+ y 1) c))
+        ;south-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (+ y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (+ x 1) (+ y 1) c))c])
+        ;south-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
+       [else c])
+     
+     ;east
+     (cond
+       [(valid-neighbour? board (+ x 1) y (tile-v this-tile))
+        (set! c (count-neighbour board (+ x 1) y c))
+        ;north-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (+ x 1) (- y 1) c))c])
+        ;south-east
+        (cond
+          [(valid-neighbour? board (+ x 1) (+ y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (+ x 1) (+ y 1) c))c])]
+       [else c])
+     
+     ;west
+     (cond
+       [(valid-neighbour? board (- x 1) y (tile-v this-tile))
+        (set! c (count-neighbour board (- x 1) y c))
+        ;north-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])
+        ;south-west
+        (cond
+          [(valid-neighbour? board (- x 1) (- y 1) (tile-v this-tile))
+           (set! c (count-neighbour board (- x 1) (- y 1) c))c])c]
+       [else c])]))
