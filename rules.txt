@@ -14,4 +14,11 @@ If west  is true, then check NW and SW
 3. CLI for read
 4. Automate game-board population
 5. Presentation
+6. No bangs
 
+
+
+
+
+7. infix . hack
+8. eq? is pointer equal
