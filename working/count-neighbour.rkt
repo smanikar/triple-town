@@ -44,8 +44,9 @@
             #f))
       #f))
 
+(define visited-list empty)
 ;count-neighbour :  
-;list-of-list-of-tile num num -> (list boolean [board-or-#f], num)
+;list-of-list-of-tile num num symbol list -> (list boolean [board-or-#f], num)
 
 ;Returns 'count', the number of relevant neighbouring tiles of ('x','y') 
 ; that are same
@@ -55,32 +56,60 @@
 ;Visit all the valid neighbouring tiles(8) and call count-neighbour
 
 (define (count-neighbour b x y v l)
+  (let ([ret (list b 0)])
+    (cond
+      [(cond 
+         [(on-board? b x y)
+          (let ([t (get-tile b x y)])
+            (cond 
+              [(and (symbol=? (tile-v t) v)
+                    (false? (member t l)))
+               (let* (;north
+                      [r1 (count-neighbour b x (sub1 y) v (cons t l))]
+                      ;south
+                      [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]
+                      ;east
+                      [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]
+                      ;west
+                      [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])
+                 (list (car r4) (+ 1 (cadr r1) (cadr r2) (cadr r3) (cadr r4))))]
+              [else ret]))]
+         [else ret])]
+      [else ret])))
+
+;collapse-board-row : list-of-tile num num symbol list -> boolean [row-or-#f]
+;Collapses all  neighbours of ('x','y')
+
+;;;;;;;;;;;;
+;INCOMPLETE;
+;;;;;;;;;;;;
+
+(define (collapse-board-row r x y v)
   (cond
-    [(cond 
-       [(on-board? b x y)
-        (let ([t (get-tile b x y)])
-          (cond 
-            [(and (symbol=? (tile-v t) v)
-                  (false? (member t l))
-                  (false? (symbol=? (tile-v t) 'blank)))
-             (let* (;north
-                    [r1 (count-neighbour b x (sub1 y) v (cons t l))]
-                    ;south
-                    [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]
-                    ;east
-                    [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]
-                    ;west
-                    [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])
-               (list (car r4) (+ 1 (cadr r1) (cadr r2) (cadr r3) (cadr r4))))]
-            [else (list b 0)]))]
-       [else (list b 0)])]
-    [else (list b 0)]))
+    [(empty? r) empty]
+    [(cons? r) empty]))
+
+
+;collapse-board : list-of-list-of-tile num num symbol list -> boolean [board-or-#f]
+;collapses all neighbours of ('x','y')
+
+;;;;;;;;;;;;
+;INCOMPLETE;
+;;;;;;;;;;;;
+
+(define (collapse-board b x y v)
+  (cond
+    [(empty? b) empty]
+    [(cons? b) 
+     (cons(collapse-board-row (first b) x y  v)
+          (collapse-board (rest b) x y v))]))
+
 
 (define b2
   (list
    (list (tile 'grass 0 0 #t) (tile 'grass 1 0 #t) (tile 'blank 2 0 #f))
    (list (tile 'grass 0 1 #t) (tile 'grass 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
+   (list (tile 'grass 0 2 #f) (tile 'grass 1 2 #f) (tile 'grass 2 2 #f))))
 
 (define mlist (list (list 1 2) (list 3 4)))
 (module+ test
