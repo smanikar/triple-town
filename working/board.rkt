@@ -26,6 +26,8 @@
     [(symbol=? cur-tile 'shack) 'house]
     [(symbol=? cur-tile 'house) 'mansion]
     [(symbol=? cur-tile 'mansion) 'castle]
+    [(symbol=? cur-tile 'mansion) 'floating-castle]
+    [(symbol=? cur-tile 'mansion) 'triple-castle]
     [else (error (format "not a tile: ~s~n" cur-tile))]))
 
 ; A tile is
