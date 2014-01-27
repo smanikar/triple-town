@@ -94,10 +94,10 @@
 (define (count-neighbour b x y v l)
   (if (valid-neighbour? b x y v l)
       (let* ([t (get-tile b x y)]
-             [r1 (count-neighbour b x (sub1 y) v (cons t l))]
-             [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]
-             [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]
-             [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])
+             [r1 (count-neighbour b x (sub1 y) v (cons t l))]               ;north
+             [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]        ;south
+             [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]        ;east
+             [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])       ;west
         (list (car r4) (+ 1 (cadr r1) (cadr r2) (cadr r3) (cadr r4))))
       (list b 0)))
 
@@ -105,10 +105,10 @@
   (if (valid-neighbour? b x y v l)
       (let* ([t (get-tile b x y)]
              [b0 (replace b x y 'blank)]
-             [b1 (replace-neighbours b0 x (sub1 y) v (cons t l))]
-             [b2 (replace-neighbours b1 x (add1 y) v (cons t l))]
-             [b3 (replace-neighbours b2 (add1 x) y v (cons t l))]
-             [b4 (replace-neighbours b3 (sub1 x) y v (cons t l))])
+             [b1 (replace-neighbours b0 x (sub1 y) v (cons t l))]           ;north
+             [b2 (replace-neighbours b1 x (add1 y) v (cons t l))]           ;south
+             [b3 (replace-neighbours b2 (add1 x) y v (cons t l))]           ;east
+             [b4 (replace-neighbours b3 (sub1 x) y v (cons t l))])          ;west
         b4)
       b))
 
