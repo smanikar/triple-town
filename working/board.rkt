@@ -111,7 +111,7 @@
       b))
 
 ; place-tile : tile, boards -> boolean [board-or-#f]
-; Places on board and returns if place-tile was successful
+;  Places on board and returns if place-tile was successful
 (define (place-tile b x y v)
   (if (on-board? x y)
       (if (symbol=? (tile-v (get-tile b x y)) 'blank)
@@ -120,7 +120,7 @@
       #f))
 
 ; collapse : tile, boards -> boolean [board-or-#f]
-; Place tile, collapse board by replacing all neighbours
+;  Place tile, collapse board by replacing all neighbours
 
 (define (collapse b x y v)
   (let ([b0 (place-tile b x y v)])
@@ -152,7 +152,7 @@
 (define b1
   (list
    (list (tile 'grass 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
-   (list (tile 'bush  0 1) (tile 'shack 1 1) (tile 'blank 2 1))
+   (list (tile 'grass  0 1) (tile 'shack 1 1) (tile 'blank 2 1))
    (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
 (define b2
@@ -160,11 +160,6 @@
    (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
    (list (tile 'blank 0 1) (tile 'shack 1 1) (tile 'blank 2 1))
    (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
-
-;(printf "Before collapse \n")
-;(display-board game-board)
-;(collapse-board-init)
-;(printf "After collapse \n")
 
 (define (test-func)
   (display-board b1)
