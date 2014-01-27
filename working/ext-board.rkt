@@ -1,6 +1,8 @@
 #lang racket
 (require rackunit)
 (require test-engine/racket-tests)
+;(require math/base)
+;(require racket/math)
 
 ; Task for 1/22
 ; function that takes a move and put it on the board and makes a collapse
@@ -43,8 +45,38 @@
     [(symbol=? cur-tile 'rock) 'mountain]
     [else (error (format "not a tile: ~s~n" cur-tile))]))
 
-; A tile is
-;  (make-tile symbol num num boolean)
+
+;A store house an tile to store
+
+(define store-house empty)
+;A list of all possible inputs
+(define input-list (list 'grass 'bush 'tree 'hut 'crystal 'imperial-bot 'bear 'ninja-bear))
+
+;gen:input : none -> symbol
+; Generates a symbol from 0 to 7 based on weightes
+
+(define (gen-input)
+  (let ([n (+ (random 100) 1)])
+    (cond
+      [(<= n 61) 
+       (list-ref input-list 0)]
+      [(and (> n 61) (<= n 76))
+       (list-ref input-list 1)]
+      [(and (> n 76) (<= n 78))
+       (list-ref input-list 2)]
+      [(and (> n 78) (<= n 79))
+       (list-ref input-list 3)]
+      [(and (> n 79) (<= n 81))
+       (list-ref input-list 4)]
+      [(and (> n 81) (<= n 84))
+       (list-ref input-list 5)]
+      [(and (> n 84) (<= n 99))
+       (list-ref input-list 6)]
+      [(and (> n 99) (<= n 100))
+       (list-ref input-list 4)])))
+      ;[else (error "random number")])))
+
+; A tile is (make-tile symbol num num)
 (define-struct tile (v x y) #:transparent)
 
 (define board-size 3)
@@ -145,9 +177,18 @@
               (let ([b2 (replace-neighbours (car res) x y v empty)])
                 (if b2
                     (replace b2 x y (next-tile v))
-                    #f))
-              #f))
-        #f)))
+                    b2))
+              (car res)))
+        b0)))
+
+(define (move b)
+  (display-board b)
+  (let ([inp (gen-input)])
+    (printf "New tile - ~a\n" inp)
+    (printf "Enter (x,y) - \n")
+    (printf "Collapsing...\n")
+    (let ([b1 (collapse b (read) (read) inp)])
+      (if b1 (display-board b1) #f))))
 
 (define (display-board-row row)
   (cond
@@ -185,4 +226,4 @@
         (display-board b2)
         (printf "Failed \n"))))
 
-(test-func)
+(move (move (move b1)))
