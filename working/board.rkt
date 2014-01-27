@@ -15,7 +15,7 @@
 ;   - 'mansion
 ;   - 'castle
 
-; next-tile : symbol -> symbol
+;next-tile : symbol -> symbol
 ; Gets the next tile of cur-tile
 (define (next-tile cur-tile)
   (cond
@@ -28,173 +28,111 @@
     [(symbol=? cur-tile 'mansion) 'castle]
     [else (error (format "not a tile: ~s~n" cur-tile))]))
 
-(module+ test 
-  (check-equal? (next-tile 'grass) 'bush)
-  (check-equal? (next-tile 'bush)  'tree)
-  (check-equal? (next-tile 'tree)  'shack)
-  (check-equal? (next-tile 'shack) 'house)
-  (check-equal? (next-tile 'house) 'mansion)
-  (check-equal? (next-tile 'mansion) 'castle)
-  (check-error (next-tile 'test) "not a tile: test")
-  )
-
-
 ; A tile is
 ;  (make-tile symbol num num boolean)
-(define-struct tile (v x y c) #:transparent)
+(define-struct tile (v x y) #:transparent)
 
-(define game-board
-  (list
-   (list (tile 'blank 0 0 #t) (tile 'blank 1 0 #t) (tile 'blank 2 0 #f))
-   (list (tile 'blank 0 1 #t) (tile 'grass 1 1 #f) (tile 'blank 2 1 #f))
-   (list (tile 'blank 0 2 #f) (tile 'blank 1 2 #f) (tile 'blank 2 2 #f))))
+(define board-size 3)
 
-(define board-size (length game-board))
-
-;get-tile: list-of-list-of-tiles num num -> tile
+;get-tile: boards num num -> tile
 ; Returns the 'tile' with coordinates ('x','y') on 'board'
 
 (define (get-tile board x y)
   (list-ref (list-ref board y) x))
 
-;on-board : list-of-list-of-tiles num num -> bool
-;Checks if a given tile ('x','y') is on the 'board'
+;on-board? : num num -> bool
+; Checks if a given tile ('x','y') is on the 'board'
 
-(define (on-board? board x y)
-  (cond
-    [(empty? board) #f]
-    [(and (and (< x board-size) (> x -1)) 
-          (and (< y board-size) (> y -1))) 
-     #t]
-    [else #f]))
-
-
-; replace-neighbour-row list-of-tiles num num -> list-of-tiles
-; Find and replace all visited tiles with blank except ('x', 'y')
-
-(define (replace-neighbour-row row x y)
-  (cond
-    [(empty? row) empty]
-    [(cons? row)
-     (let* ([tv (tile-v (first row))]
-            [tx (tile-x (first row))]
-            [ty (tile-y (first row))]
-            [tc (tile-c (first row))])
-       (cond 
-         [tc 
-          (cond 
-            [(and (equal? tx x)
-                  (equal? ty y)
-                  (not (symbol=? tv 'blank)))
-             (cons (tile (next-tile tv) x y #t)
-                   (replace-neighbour-row (rest row) x y))]
-            [else  (cons (tile 'blank tx ty #t) 
-                         (replace-neighbour-row (rest row) x y))])]
-         [else (cons (tile tv tx ty tc)
-                     (replace-neighbour-row (rest row) x y))]))]))
-
-;replace-neighbours : list-of-list-of-tiles num num -> list-of-list-of-tiles
-;Finds and replaces all neighbours of ('x','y') on 'board' with higher field
-;Algo -
-;Scan through the entire board, and replace all visited tiles except this-tile
-;with 'blank. 
-;Replace this tile with 'next-tile'
-
-(define (replace-neighbour board x y)
-  (cond
-    [(empty? board) empty]
-    [(cons? board) 
-     (cons (replace-neighbour-row(first board) x y)
-           (replace-neighbour (rest board) x y))]))
-
-; valid-neighbour? : list-of-list-of-tile num num symbol -> boolean
-; Checks if a given tile is a valid neighbour based on 'val'
-(define (valid-neighbour? board v x y c)
-  (if (on-board? board x y)
-      (let ([t (get-tile board x y)])
-        (if (and (symbol=? (tile-v t) val)
-                 (not (tile-c c))
-                 (not (symbol=? (tile-v t) 'blank)))
-            #t #f)
-        #f)
+(define (on-board? x y)
+  (if (and (and (< x board-size) (> x -1)) 
+           (and (< y board-size) (> y -1)))
+      #t
       #f))
 
-;count-neighbour :  list-of-list-of-tile num num -> boolean [board-or-#f], num
-;Returns 'count', the number of relevant neighbouring tiles of ('x','y') 
-; that are same
-;Algo-
-;Increment count
-;Mark (x,y) as visited
-;Visit all the valid neighbouring tiles(8) and call count-neighbour
+;valid-neighbour? : board num num symbol list -> boolean
+; Checks if a given tile is a valid neighbour based on 'v'
 
-(define (count-neighbour b x y)
-  (values b 0))
+(define (valid-neighbour? board x y v l)
+  (if (on-board? x y)
+      (let ([t (get-tile board x y)])
+        (if (and (symbol=? (tile-v t) v)
+                 (false? (member t l)))
+            #t 
+            #f))
+      #f))
 
-; reset-check-row : list-of-tiles -> list-of-tiles
-; Resets all check fields in 'row' to #f
+; replace-row : list num val -> list
+;  Replces one item in a list (with 0-based indexing)
 
-(define (reset-check-row row)
+(define (replace-row r x v)
   (cond
-    [(empty? row) row]
-    [(cons? row) (cons (tile (tile-v (first row))
-                             (tile-x (first row))
-                             (tile-y (first row))
-                             #f)
-                       (reset-check-row (rest row)))]))
+    [(empty? r) empty]
+    [(cons? r) (if (= x 0)
+                   (cons (tile v 
+                               (tile-x (first r)) 
+                               (tile-y (first r))) 
+                         (rest r))
+                   (cons (first r)
+                         (replace-row (rest r) (- x 1) v)))]))
 
+; replace : board num num val -> board
+;  Replaces one item in the board
 
-; reset-check : list of list of tiles -> list of list of tiles
-; Resets all check fields in 'board' to #f
-
-(define (reset-check board)
-  (cond
-    [(empty? board) board]
-    [(cons? board) (cons (reset-check-row (first board))
-                         (reset-check (rest board)))]))
-
-; collapse-board : list-of-list-of-tile num num -> boolean [board-or-#f]
-; Collapse all possible 3 or more occurances of 'val' into next 'val' for ('x','y')
-; Returns if collapse was successful
-
-(define (collapse-board board x y)
-  (let-values ([(b n) (count-neighbour (reset-check board) x y 0)])
-    (cond 
-      [(> n 2)
-       (cond 
-         [(replace-neighbour b x y) #t]
-         [else #f])]
-      [else #f])))
-
-;place-tile-board-row : list-of-tiles, tile -> list-of-tiles
-;Place tile on row
-(define (place-tile-row r v x y)
-  (cond
-    [(empty? r)  empty]
-    [(cons? r) 
-     (cond
-       [(and (equal? (tile-x (first r)) x)
-             (equal? (tile-y (first r)) y))
-        (cons (tile v (tile-x (first r)) (tile-y (first r)) #f)
-              (place-tile-row (rest r) v x y))]
-       [else (cons (first r) 
-                   (place-tile-row (rest r) v x y))])]))
-
-;place-tile-board : list-of-list-of-tiles, tile -> list-of-list-of-tiles
-;Places tile on board
-(define (place-tile b v x y)
+(define (replace b x y v)
   (cond
     [(empty? b) empty]
-    [(cons? b) 
-     (cons (place-tile-row (first b) v x y)
-           (place-tile (rest b) v x y))]))
+    [(cons? b) (if (= y 0)
+                   (cons (replace-row (first b) x v)
+                         (rest b))
+                   (cons (first b) (replace (rest b) x (- y 1) v)))]))
 
-; place-tile-on : tile, list-of-list-of-tiles -> boolean [board-or-#f]
+;count-neighbour :  
+; board num num symbol list -> (list boolean [board-or-#f], num)
+
+(define (count-neighbour b x y v l)
+  (if (valid-neighbour? b x y v l)
+      (let* ([t (get-tile b x y)]
+             [r1 (count-neighbour b x (sub1 y) v (cons t l))]
+             [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]
+             [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]
+             [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])
+        (list (car r4) (+ 1 (cadr r1) (cadr r2) (cadr r3) (cadr r4))))
+      (list b 0)))
+
+(define (replace-neighbours b x y v l)
+  (if (valid-neighbour? b x y v l)
+      (let* ([t (get-tile b x y)]
+             [b0 (replace b x y 'blank)]
+             [b1 (replace-neighbours b0 x (sub1 y) v (cons t l))]
+             [b2 (replace-neighbours b1 x (add1 y) v (cons t l))]
+             [b3 (replace-neighbours b2 (add1 x) y v (cons t l))]
+             [b4 (replace-neighbours b3 (sub1 x) y v (cons t l))])
+        b4)
+      b))
+
+; place-tile : tile, boards -> boolean [board-or-#f]
 ; Places on board and returns if place-tile was successful
-(define (place-tile-on b v x y)
-  (cond 
-    [(symbol=? (tile-v (get-tile b (tile-x t) (tile-y t))) 'blank)
-     (place-tile b v x y)]
-    [else #f]))
+(define (place-tile b x y v)
+  (if (on-board? x y)
+      (if (symbol=? (tile-v (get-tile b x y)) 'blank)
+          (replace b x y v)
+          #f)
+      #f))
+
+; collapse : tile, boards -> boolean [board-or-#f]
+; Place tile, collapse board by replacing all neighbours
+
+(define (collapse b x y v)
+  (let ([b0 (place-tile b x y v)])
+    (if b0
+        (let ([res (count-neighbour b0 x y v empty)])
+          (if (> (cadr res) 2)
+              (let ([b2 (replace-neighbours (car res) x y v empty)])
+                (if b2
+                    (replace b2 x y (next-tile v))
+                    #f))
+              #f))
+        #f)))
 
 (define (display-board-row row)
   (cond
@@ -211,27 +149,30 @@
      (printf "\n")
      (display-board (rest board))]))
 
+(define b1
+  (list
+   (list (tile 'grass 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
+   (list (tile 'bush  0 1) (tile 'shack 1 1) (tile 'blank 2 1))
+   (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
+
+(define b2
+  (list
+   (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
+   (list (tile 'blank 0 1) (tile 'shack 1 1) (tile 'blank 2 1))
+   (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
+
 ;(printf "Before collapse \n")
 ;(display-board game-board)
 ;(collapse-board-init)
 ;(printf "After collapse \n")
 
-(display-board game-board)
+(define (test-func)
+  (display-board b1)
+  (printf "Collapsing ...\n")
+  (let
+      ([b2 (collapse b1 1 2 'grass)])
+    (if b2
+        (display-board b2)
+        (printf "Failed \n"))))
 
-(printf "Place tile 'grass at (2 2) - ")
-(place-tile (tile 'grass 2 2 #f) game-board)
-(printf "Collapse (2 2) - ")
-(collapse-board game-board 2 2)
-(display-board game-board)
-
-(printf "Place tile 'grass at (2 1) - ")
-(place-tile (tile 'grass 2 1 #f) game-board)
-(printf "Collapse (2 2) - ")
-(collapse-board game-board 2 1)
-(display-board game-board)
-
-(printf "Place tile 'grass at (1 2) - ")
-(place-tile (tile 'grass 1 2 #f) game-board)
-(printf "Collapse (1 2) - ")
-(collapse-board game-board 1 2)
-(display-board game-board)
+(test-func)
