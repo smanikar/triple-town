@@ -1,8 +1,6 @@
 #lang racket
 (require rackunit)
 (require test-engine/racket-tests)
-;(require math/base)
-;(require racket/math)
 
 ; Task for 1/22
 ; function that takes a move and put it on the board and makes a collapse
@@ -12,7 +10,7 @@
 ;   - 'grass
 ;   - 'bush
 ;   - 'tree
-;   - 'shack
+;   - 'house
 ;   - 'house
 ;   - 'mansion
 ;   - 'castle
@@ -24,8 +22,8 @@
     ;[(symbol=? cur-tile 'blank) 'grass]
     [(symbol=? cur-tile 'grass) 'bush]
     [(symbol=? cur-tile 'bush)  'tree]
-    [(symbol=? cur-tile 'tree)  'shack]
-    [(symbol=? cur-tile 'shack) 'house]
+    [(symbol=? cur-tile 'tree)  'hut]
+    [(symbol=? cur-tile 'hut) 'house]
     [(symbol=? cur-tile 'house) 'mansion]
     [(symbol=? cur-tile 'mansion) 'castle]
     [(symbol=? cur-tile 'mansion) 'floating-castle]
@@ -56,25 +54,17 @@
 ; Generates a symbol from 0 to 7 based on weightes
 
 (define (gen-input)
-  (let ([n (+ (random 100) 1)])
+  (let ([n (random 100)])
     (cond
-      [(<= n 61) 
-       (list-ref input-list 0)]
-      [(and (> n 61) (<= n 76))
-       (list-ref input-list 1)]
-      [(and (> n 76) (<= n 78))
-       (list-ref input-list 2)]
-      [(and (> n 78) (<= n 79))
-       (list-ref input-list 3)]
-      [(and (> n 79) (<= n 81))
-       (list-ref input-list 4)]
-      [(and (> n 81) (<= n 84))
-       (list-ref input-list 5)]
-      [(and (> n 84) (<= n 99))
-       (list-ref input-list 6)]
-      [(and (> n 99) (<= n 100))
-       (list-ref input-list 4)])))
-      ;[else (error "random number")])))
+      [(< n 61) (list-ref input-list 0)]
+      [(< n 76) (list-ref input-list 1)]
+      [(< n 78) (list-ref input-list 2)]
+      [(< n 79) (list-ref input-list 3)]
+      [(< n 81) (list-ref input-list 4)]
+      [(< n 84) (list-ref input-list 5)]
+      [(< n 99) (list-ref input-list 6)]
+      [(< n 100) (list-ref input-list 7)]
+      [else (error "random number")])))
 
 ; A tile is (make-tile symbol num num)
 (define-struct tile (v x y) #:transparent)
@@ -91,22 +81,17 @@
 ; Checks if a given tile ('x','y') is on the 'board'
 
 (define (on-board? x y)
-  (if (and (and (< x board-size) (> x -1)) 
-           (and (< y board-size) (> y -1)))
-      #t
-      #f))
+  (and (and (< x board-size) (> x -1)) 
+       (and (< y board-size) (> y -1))))
 
 ;valid-neighbour? : board num num symbol list -> boolean
 ; Checks if a given tile is a valid neighbour based on 'v'
 
 (define (valid-neighbour? board x y v l)
-  (if (on-board? x y)
-      (let ([t (get-tile board x y)])
-        (if (and (symbol=? (tile-v t) v)
-                 (false? (member t l)))
-            #t 
-            #f))
-      #f))
+  (and (on-board? x y)
+       (let ([t (get-tile board x y)])
+         (and (symbol=? (tile-v t) v)
+              (false? (member t l))))))
 
 ; replace-row : list num val -> list
 ;  Replces one item in a list (with 0-based indexing)
@@ -133,62 +118,74 @@
                          (rest b))
                    (cons (first b) (replace (rest b) x (- y 1) v)))]))
 
-;count-neighbour :  
-; board num num symbol list -> (list boolean [board-or-#f], num)
+;count-neighbours :  
+; board num num symbol list -> (list [list-or-#f], num)
 
-(define (count-neighbour b x y v l)
-  (if (valid-neighbour? b x y v l)
-      (let* ([t (get-tile b x y)]
-             [r1 (count-neighbour b x (sub1 y) v (cons t l))]               ;north
-             [r2 (count-neighbour (car r1) x (add1 y) v (cons t l))]        ;south
-             [r3 (count-neighbour (car r2) (add1 x) y v (cons t l))]        ;east
-             [r4 (count-neighbour (car r3) (sub1 x) y v (cons t l))])       ;west
-        (list (car r4) (+ 1 (cadr r1) (cadr r2) (cadr r3) (cadr r4))))
-      (list b 0)))
+(define (count-neighbours b x y v l)
+  (cond [(empty? b) (list #f l)]
+        [(cons? b)
+         (if (valid-neighbour? b x y v l)
+             (let* ([t (get-tile b x y)]
+                    [l1 (count-neighbours b x (sub1 y) v (cons t l))]               ;north
+                    [l2 (count-neighbours b x (add1 y) v (cons t (car l1)))]        ;south
+                    [l3 (count-neighbours b (add1 x) y v (cons t (car l2)))]        ;east
+                    [l4 (count-neighbours b (sub1 x) y v (cons t (car l3)))])       ;west
+               (list (car l4) (+ 1 (cadr l1) (cadr l2) (cadr l3) (cadr l4))))
+             (list l 0))]))
+
+;replace-neighbours :
+; board num num symbol list -> (list boolean [board-or-#f], list)
 
 (define (replace-neighbours b x y v l)
-  (if (valid-neighbour? b x y v l)
-      (let* ([t (get-tile b x y)]
-             [b0 (replace b x y 'blank)]
-             [b1 (replace-neighbours b0 x (sub1 y) v (cons t l))]           ;north
-             [b2 (replace-neighbours b1 x (add1 y) v (cons t l))]           ;south
-             [b3 (replace-neighbours b2 (add1 x) y v (cons t l))]           ;east
-             [b4 (replace-neighbours b3 (sub1 x) y v (cons t l))])          ;west
-        b4)
-      b))
+  (cond
+    [(empty? b) (list #f l)]
+    [(cons? b)
+     (if (valid-neighbour? b x y v l)
+         (let* ([t (get-tile b x y)]
+                [b0 (replace b x y 'blank)]
+                [l1 (replace-neighbours b0 x (sub1 y) v (cons t l))]                    ;north
+                [l2 (replace-neighbours (car l1) x (add1 y) v (cons t (cadr l1)))]      ;south
+                [l3 (replace-neighbours (car l2) (add1 x) y v (cons t (cadr l2)))]      ;east
+                [l4 (replace-neighbours (car l3) (sub1 x) y v (cons t (cadr l3)))])     ;west
+           l4)
+         (list b l))]))
 
 ; place-tile : tile, boards -> boolean [board-or-#f]
 ;  Places on board and returns if place-tile was successful
 (define (place-tile b x y v)
-  (if (on-board? x y)
-      (if (symbol=? (tile-v (get-tile b x y)) 'blank)
-          (replace b x y v)
-          #f)
-      #f))
+  (cond 
+    [(empty? b) #f]
+    [(cons? b)
+     (and (on-board? x y)
+          (and (symbol=? (tile-v (get-tile b x y)) 'blank)
+               (replace b x y v)))]))
 
 ; collapse : tile, boards -> boolean [board-or-#f]
 ;  Place tile, collapse board by replacing all neighbours
 
 (define (collapse b x y v)
-  (let ([b0 (place-tile b x y v)])
-    (if b0
-        (let ([res (count-neighbour b0 x y v empty)])
-          (if (> (cadr res) 2)
-              (let ([b2 (replace-neighbours (car res) x y v empty)])
-                (if b2
-                    (replace b2 x y (next-tile v))
-                    b2))
-              (car res)))
-        b0)))
+  (let ([b1 (place-tile b x y v)])
+    (let ([res (count-neighbours b1 x y v empty)])
+      (if (> (cadr res) 2)
+          (replace (car (replace-neighbours b1 x y v empty)) x y (next-tile v))
+          b1))))
+
+;move : board -> boolean
+; Displays board, reads new tile, collapses board, displays board
 
 (define (move b)
-  (display-board b)
-  (let ([inp (gen-input)])
-    (printf "New tile - ~a\n" inp)
-    (printf "Enter (x,y) - \n")
-    (printf "Collapsing...\n")
-    (let ([b1 (collapse b (read) (read) inp)])
-      (if b1 (display-board b1) #f))))
+  (cond
+    [(empty? b) #f]
+    [(cons? b)
+     (display-board b)
+     (let ([inp (gen-input)])
+       (printf "New tile - ~a\n" inp)
+       (printf "Enter (x,y) - \n")
+       (printf "Collapsing...\n")
+       (display-board (collapse b (read) (read) inp)))]))
+       
+;display-board-row : list-of-tiles -> list-of-tiles
+; Displays a row of tiles
 
 (define (display-board-row row)
   (cond
@@ -196,6 +193,9 @@
     [(cons? row)
      (printf " ~a " (tile-v (first row)))
      (display-board-row (rest row))]))
+
+;display-board : board -> board
+; Displays a board of tiles
 
 (define (display-board board)
   (cond
@@ -207,23 +207,15 @@
 
 (define b1
   (list
-   (list (tile 'grass 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
-   (list (tile 'grass  0 1) (tile 'shack 1 1) (tile 'blank 2 1))
+   (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
+   (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
    (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
 (define b2
   (list
    (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
-   (list (tile 'blank 0 1) (tile 'shack 1 1) (tile 'blank 2 1))
+   (list (tile 'blank 0 1) (tile 'hut  1 1) (tile 'blank 2 1))
    (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
 
-(define (test-func)
-  (display-board b1)
-  (printf "Collapsing ...\n")
-  (let
-      ([b2 (collapse b1 1 2 'grass)])
-    (if b2
-        (display-board b2)
-        (printf "Failed \n"))))
+(move empty)
 
-(move (move (move b1)))
