@@ -14,7 +14,7 @@
       [(< n 99) (list-ref input-list 6)]
       [(< n 100) (list-ref input-list 7)]
       [else (error "random number")])))
-(define n 10000.0)
+(define n 100000.0)
 
 (define (incr-list i l)
   (let-values ([(f r) (split-at l i)])
