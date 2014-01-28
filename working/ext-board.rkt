@@ -270,7 +270,7 @@
        (printf "New tile - ~a\n" inp)
        (printf "Enter (x,y) - \n")
        (printf "Collapsing...\n")
-       (display-board (collapse b (read) (read) inp)))]))
+       (collapse b (read) (read) inp))]))
 
 ;display-board-row : list-of-tiles -> list-of-tiles
 ; Displays a row of tiles
@@ -291,7 +291,7 @@
     [(cons? board)
      (display-board-row (first board))
      (printf "\n")
-     (display-board (rest board))]))
+     (display-board (rest board))
+     board]))
 
-;(move b1)
-
+(display-board (move (move (move b1))))
