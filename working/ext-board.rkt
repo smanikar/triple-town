@@ -207,15 +207,15 @@
 
 (define b1
   (list
-   (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
-   (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
+   (list (tile 'grass 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
+   (list (tile 'grass 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
    (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
 (define b2
   (list
    (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
-   (list (tile 'blank 0 1) (tile 'hut  1 1) (tile 'blank 2 1))
+   (list (tile 'blank 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
    (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
 
-(move empty)
+(move b1)
 
