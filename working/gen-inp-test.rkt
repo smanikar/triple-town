@@ -24,7 +24,6 @@
   (for/list ([i l])
     (/ (* i 100) n)))
     
-
 (define (test-gen-input)
   (let ([l (list 0 0 0 0 0 0 0 0)])
     (for ([i (range n)])
