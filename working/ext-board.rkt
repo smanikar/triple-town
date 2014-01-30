@@ -77,6 +77,9 @@
                  (list (tile 'bush  0 1) (tile 'grass 1 1) (tile 'blank 2 1))
                  (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
+(define b4 (list (list (tile 'tree  0 0) (tile 'bush 1 0) (tile 'grass 2 0))
+                 (list (tile 'blank 0 1) (tile 'bush 1 1) (tile 'blank 2 1))
+                 (list (tile 'tree 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
 ;gen:input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
@@ -183,6 +186,7 @@
 (define (replace b x y v)
   (cond
     [(empty? b) empty]
+    [(false? b) #f]
     [(cons? b) (if (= y 0)
                    (cons (replace-row (first b) x v)
                          (rest b))
@@ -204,6 +208,7 @@
 
 (define (count-neighbours b x y v l)
   (cond [(empty? b) (list #f 0)]
+        [(false? b) (list #f 0)]
         [(cons? b)
          (if (valid-neighbour? b x y v l)
              (let* ([t (get-tile b x y)]
@@ -233,6 +238,7 @@
 (define (replace-neighbours b x y v l)
   (cond
     [(empty? b) (list #f l)]
+    [(false? b) (list #f l)]
     [(cons? b)
      (if (valid-neighbour? b x y v l)
          (let* ([t (get-tile b x y)]
@@ -269,6 +275,7 @@
 (define (place-tile b x y v)
   (cond 
     [(empty? b) #f]
+    [(false? b) #f]
     [(cons? b)
      (and (on-board? x y (length b))
           (and (symbol=? (tile-v (get-tile b x y)) 'blank)
@@ -293,6 +300,7 @@
 (define (multi-collapse b x y v)
   (cond
     [(empty? b) #f]
+    [(false? b) #f]
     [(cons? b)
      (let loop ([board b]
                 [value v]
@@ -301,19 +309,62 @@
            (let* ([b1 (replace (car (replace-neighbours board x y value empty))
                                x y (next-tile value))]
                   [c1 (cadr (count-neighbours b1 x y (next-tile value) empty))])
-          (loop b1 (next-tile v) c1))
+             (loop b1 (next-tile v) c1))
            board))]))
+(module+ test
+  (check-equal? (multi-collapse empty -1 -1 'grass) #f)
+  (check-equal? (multi-collapse t1 -1 -1 'grass) t1)
+  (check-equal? (multi-collapse t1 1 1 'reddit) t1)
+  (check-equal? (multi-collapse (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
+                                      (list (tile 'grass 0 1) (tile 'grass 1 1)))
+                                0 1 'grass)
+                (list (list (tile 'blank 0 0) (tile 'blank 1 0)) 
+                      (list (tile 'bush  0 1) (tile 'blank 1 1))))
+  (check-equal? (multi-collapse (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
+                                      (list (tile 'grass 0 1) (tile 'grass 1 1)))
+                                1 1 'grass)
+                (list (list (tile 'blank 0 0) (tile 'blank 1 0)) 
+                      (list (tile 'blank 0 1) (tile 'bush  1 1))))
+  (check-equal? (multi-collapse b3 1 0 'grass)
+                (list
+                 (list (tile 'blank 0 0) (tile 'tree 1 0) (tile 'blank 2 0))
+                 (list (tile 'blank 0 1) (tile 'blank 1 1) (tile 'blank 2 1))
+                 (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2)))))
+; collapse : board num num sybmol -> boolean [board-or-#f]
+;  Places a tile on board and collapses it
 
 (define (collapse b x y v)
- (multi-collapse (place-tile b x y v)))
+  (cond
+    [(empty? b) #f]
+    [(false? b) #f]
+    [(cons? b)
+     (let ([r (place-tile b x y v)])
+       (if (false? r) b (multi-collapse r x y v)))]))
 
-
-;  (let ([b1 (place-tile b x y v)])
-;    (let ([res (count-neighbours b1 x y v empty)])
-;      (if (> (cadr res) 2)
-;          (replace (car (replace-neighbours b1 x y v empty)) 
-;                   x y (next-tile v))
-;          b1))))
+(module+ test
+  (check-equal? (collapse empty -1 -1 'grass) #f)
+  (check-equal? (collapse t1 -1 -1 'grass) t1)
+  (check-equal? (collapse t1 1 1 'reddit) t1)
+  (check-equal? (collapse (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
+                                (list (tile 'blank 0 1) (tile 'grass 1 1)))
+                          0 1 'grass)
+                (list (list (tile 'blank 0 0) (tile 'blank 1 0)) 
+                      (list (tile 'bush  0 1) (tile 'blank 1 1))))
+  (check-equal? (collapse t1 1 1 'grass) t1)
+  (check-equal? (collapse (list
+                           (list (tile 'bush 0 0) (tile 'blank 1 0) (tile 'grass 2 0))
+                           (list (tile 'bush 0 1) (tile 'grass 1 1) (tile 'blank 2 1))
+                           (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2)))
+                          1 0 'grass)
+                (list
+                 (list (tile 'blank 0 0) (tile 'tree 1 0) (tile 'blank 2 0))
+                 (list (tile 'blank 0 1) (tile 'blank 1 1) (tile 'blank 2 1))
+                 (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
+  (check-equal? (collapse b4 0 1 'bush)
+                (list
+                 (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'grass 2 0))
+                 (list (tile 'hut   0 1) (tile 'blank 1 1) (tile 'blank 2 1))
+                 (list (tile 'blank 0 2) (tile 'blank 1 2) (tile 'grass 2 2)))))
 
 ; decide-move : board num num symbol -> boolean [board-or-#f]
 ;  Decide whether move is 
@@ -359,5 +410,5 @@
      (display-board (rest board))
      board]))
 
-(multi-collapse b3 1 0 'grass)
+;(multi-collapse b3 1 0 'grass)
 ;(display-board (move (move (move b1))))
