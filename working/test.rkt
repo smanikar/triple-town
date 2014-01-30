@@ -3,41 +3,51 @@
 (define-struct tile (x (y #:mutable)) #:transparent)
 
 
+(define (loop-until start done? next f)
+  (let loop ([i start])
+    (unless (done? i)
+      (f i)
+      (loop (next i)))))
 
-(define (fun3 x)
-  (if (> x 3) 
-      9
-      -1)
-  (if (< x 3)
-      8
-      -2))
-(printf "~a\n" (fun3 4))
+(display (loop-until 5
+            (λ (x) (> x 10))
+            (λ (x) (add1 x))
+            (λ (x) (printf "~a\n" x))))
 
-(printf "~a\n" 
-        (let ([x 5][y 10])
-          (+ x y)))
-
-(define (fun1 x)
-  (cond
-    [ (< x 0) (+ x 10)]
-    [ (> x 0) (- x 9)]
-    [ (equal? x 0)  23]))
-
-(define (less x)
-  (if (< x 0) (+ x 10) x))
-
-(define (more x)
-  (if (> x 0) (- x 9) x))
-
-(define (equal x)
-  (if (equal? x 0) 23 x))
-
-(define (fun2 x)
-  (equal (more (less x))))
-
-(printf "~a \n" (fun2 -1))      
-
-(printf "~a \n" (fun1 -1))
+;(define (fun3 x)
+;  (if (> x 3) 
+;      9
+;      -1)
+;  (if (< x 3)
+;      8
+;      -2))
+;(printf "~a\n" (fun3 4))
+;
+;(printf "~a\n" 
+;        (let ([x 5][y 10])
+;          (+ x y)))
+;
+;(define (fun1 x)
+;  (cond
+;    [ (< x 0) (+ x 10)]
+;    [ (> x 0) (- x 9)]
+;    [ (equal? x 0)  23]))
+;
+;(define (less x)
+;  (if (< x 0) (+ x 10) x))
+;
+;(define (more x)
+;  (if (> x 0) (- x 9) x))
+;
+;(define (equal x)
+;  (if (equal? x 0) 23 x))
+;
+;(define (fun2 x)
+;  (equal (more (less x))))
+;
+;(printf "~a \n" (fun2 -1))      
+;
+;(printf "~a \n" (fun1 -1))
 
 ;(define (func x)
 ;  (set! x (add1 x))
