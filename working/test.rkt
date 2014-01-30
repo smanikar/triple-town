@@ -3,16 +3,37 @@
 (define-struct tile (x (y #:mutable)) #:transparent)
 
 
-(define (loop-until start done? next f)
-  (let loop ([i start])
-    (unless (done? i)
-      (f i)
-      (loop (next i)))))
+;(define (loop-until start done? next f)
+;  (let loop ([i start])
+;    (unless (done? i)
+;      (f i)
+;      (loop (next i)))))
+;
+;(display (loop-until 5
+;            (λ (x) (> x 10))
+;            (λ (x) (add1 x))
+;            (λ (x) (printf "~a\n" x))))
 
-(display (loop-until 5
-            (λ (x) (> x 10))
-            (λ (x) (add1 x))
-            (λ (x) (printf "~a\n" x))))
+(define (funct)
+  (let loop ([i 5]
+             [j 12]
+             [k -10])
+    (unless (> (+ i j k) 12)
+      (printf "~a ~a ~a\n" i j k)
+      (loop (add1 i)
+            (sub1 j)
+            (add1 k)))))
+
+(funct)
+
+(define (foo x )
+  (if (> x 3)
+      (define a 7)
+      (define b 8)
+      (+ a b x)
+      x))
+
+(foo 4)
 
 ;(define (fun3 x)
 ;  (if (> x 3) 
