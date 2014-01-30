@@ -287,37 +287,26 @@
                  (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'random 2 1))
                  (list (tile 'blank 0 2) (tile 'bush 1 2) (tile 'blank 2 2)))))
 
-(define (loop-until start done? f next)
-  (let loop ([i start])
-    (unless (done? (cadr i))
-      (let ([r f])
-        (loop (next (cadr r) (car r)))))))
-
 ; multi-collapse : board num num sybmol -> boolean [board-or-#f]
 ;  Try replace-neighbours as many times till it reurns #f
 
 (define (multi-collapse b x y v)
-  (loop-until (count-neighbours b x y v empty)
-              (λ (k) (< k 3))
-              (list (next-tile v) 
-                    (replace (car (replace-neighbours b x y v empty))
-                             x y (next-tile v)))
-              (λ (k l) (count-neighbours k x y l empty))))
-   
-;  (let loop ([cres (count-neighbours b x y v empty)])
-;    (when (> (cadr cres) 2)
-;      (let* ([next (next-tile v)]
-;             [rres (replace (car (replace-neighbours b x y v empty)) 
-;                              x y next)])
-;        (display-board rres)
-;        (loop (count-neighbours rres x y next empty))))))
-  
-; collapse : board num num symbol -> boolean [board-or-#f]
-;  Place tile, collapse board by replacing all neighbours
+  (cond
+    [(empty? b) #f]
+    [(cons? b)
+     (let loop ([board b]
+                [value v]
+                [count (cadr (count-neighbours b x y v empty))])
+       (if (> count 2)
+           (let* ([b1 (replace (car (replace-neighbours board x y value empty))
+                               x y (next-tile value))]
+                  [c1 (cadr (count-neighbours b1 x y (next-tile value) empty))])
+          (loop b1 (next-tile v) c1))
+           board))]))
 
-(define (collapse b x y v) b)
-  ;(multi-collapse-loop (place-tile b x y v)
-                       
+(define (collapse b x y v)
+ (multi-collapse (place-tile b x y v)))
+
 
 ;  (let ([b1 (place-tile b x y v)])
 ;    (let ([res (count-neighbours b1 x y v empty)])
