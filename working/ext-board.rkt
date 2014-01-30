@@ -48,7 +48,15 @@
 (define store-house empty)
 
 ;A list of all possible inputs
-(define input-list (list 'grass 'bush 'tree 'hut 'crystal 'imperial-bot 'bear 'ninja-bear))
+(define input-list (list 
+                    'grass 
+                    'bush 
+                    'tree 
+                    'hut 
+                    'crystal 
+                    'imperial-bot 
+                    'bear 
+                    'ninja-bear))
 
 (define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
                  (list (tile 'blank 0 1) (tile 'grass 1 1))))
@@ -65,7 +73,7 @@
                  (list (tile 'blank 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
                  (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
 
-(define b3 (list (list (tile 'bush  0 0) (tile 'blank 1 0) (tile 'grass 2 0))
+(define b3 (list (list (tile 'bush  0 0) (tile 'grass 1 0) (tile 'grass 2 0))
                  (list (tile 'bush  0 1) (tile 'grass 1 1) (tile 'blank 2 1))
                  (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
 
@@ -199,10 +207,10 @@
         [(cons? b)
          (if (valid-neighbour? b x y v l)
              (let* ([t (get-tile b x y)]
-                    [l1 (count-neighbours b x (sub1 y) v (cons t l))]      ;north
-                    [l2 (count-neighbours b x (add1 y) v (car l1))]        ;south
-                    [l3 (count-neighbours b (add1 x) y v (car l2))]        ;east
-                    [l4 (count-neighbours b (sub1 x) y v (car l3))])       ;west
+                    [l1 (count-neighbours b x (sub1 y) v (cons t l))]     ;north
+                    [l2 (count-neighbours b x (add1 y) v (car l1))]       ;south
+                    [l3 (count-neighbours b (add1 x) y v (car l2))]       ;east
+                    [l4 (count-neighbours b (sub1 x) y v (car l3))])      ;west
                (list (car l4) (+ 1 (cadr l1) (cadr l2) (cadr l3) (cadr l4))))
              (list l 0))]))
 
@@ -229,10 +237,10 @@
      (if (valid-neighbour? b x y v l)
          (let* ([t (get-tile b x y)]
                 [b0 (replace b x y 'blank)]
-                [l1 (replace-neighbours b0 x (sub1 y) v (cons t l))]           ;north
-                [l2 (replace-neighbours (car l1) x (add1 y) v (cadr l1))]      ;south
-                [l3 (replace-neighbours (car l2) (add1 x) y v (cadr l2))]      ;east
-                [l4 (replace-neighbours (car l3) (sub1 x) y v (cadr l3))])     ;west
+                [l1 (replace-neighbours b0 x (sub1 y) v (cons t l))]       ;north
+                [l2 (replace-neighbours (car l1) x (add1 y) v (cadr l1))]  ;south
+                [l3 (replace-neighbours (car l2) (add1 x) y v (cadr l2))]  ;east
+                [l4 (replace-neighbours (car l3) (sub1 x) y v (cadr l3))]) ;west
            l4)
          (list b l))]))
 
@@ -279,19 +287,44 @@
                  (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'random 2 1))
                  (list (tile 'blank 0 2) (tile 'bush 1 2) (tile 'blank 2 2)))))
 
+(define (loop-until start done? f next)
+  (let loop ([i start])
+    (unless (done? (cadr i))
+      (let ([r f])
+        (loop (next (cadr r) (car r)))))))
+
 ; multi-collapse : board num num sybmol -> boolean [board-or-#f]
 ;  Try replace-neighbours as many times till it reurns #f
 
+(define (multi-collapse b x y v)
+  (loop-until (count-neighbours b x y v empty)
+              (λ (k) (< k 3))
+              (list (next-tile v) 
+                    (replace (car (replace-neighbours b x y v empty))
+                             x y (next-tile v)))
+              (λ (k l) (count-neighbours k x y l empty))))
+   
+;  (let loop ([cres (count-neighbours b x y v empty)])
+;    (when (> (cadr cres) 2)
+;      (let* ([next (next-tile v)]
+;             [rres (replace (car (replace-neighbours b x y v empty)) 
+;                              x y next)])
+;        (display-board rres)
+;        (loop (count-neighbours rres x y next empty))))))
+  
 ; collapse : board num num symbol -> boolean [board-or-#f]
 ;  Place tile, collapse board by replacing all neighbours
 
-(define (collapse b x y v)
-  (let ([b1 (place-tile b x y v)])
-    (let ([res (count-neighbours b1 x y v empty)])
-      (if (> (cadr res) 2)
-          (replace (car (replace-neighbours b1 x y v empty)) 
-                   x y (next-tile v))
-          b1))))
+(define (collapse b x y v) b)
+  ;(multi-collapse-loop (place-tile b x y v)
+                       
+
+;  (let ([b1 (place-tile b x y v)])
+;    (let ([res (count-neighbours b1 x y v empty)])
+;      (if (> (cadr res) 2)
+;          (replace (car (replace-neighbours b1 x y v empty)) 
+;                   x y (next-tile v))
+;          b1))))
 
 ; decide-move : board num num symbol -> boolean [board-or-#f]
 ;  Decide whether move is 
@@ -337,4 +370,5 @@
      (display-board (rest board))
      board]))
 
+(multi-collapse b3 1 0 'grass)
 ;(display-board (move (move (move b1))))
