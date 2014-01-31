@@ -51,7 +51,7 @@
                     'tree 
                     'hut 
                     'crystal 
-                    'imperial-bot 
+                    'imperial-robot 
                     'bear 
                     'ninja-bear))
 
@@ -80,18 +80,24 @@
                  (list (tile 'bush  0 2) (tile 'bush  1 2) (tile 'blank 2 2) (tile 'blank 3 2))
                  (list (tile 'tree  0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3))))
 
+(define b5 (list (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
+                 (list (tile 'tree  0 1) (tile 'bush  1 1) (tile 'grass 2 1) (tile 'bear  3 1))
+                 (list (tile 'bush  0 2) (tile 'bush  1 2) (tile 'tombstone 2 2) (tile 'blank 3 2))
+                 (list (tile 'tree  0 3) (tile 'bear  1 3) (tile 'tombstone 2 3) (tile 'blank 3 3))))
+
 ;gen:input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
 
 (define (gen-input)
   (let ([n (random 100)])
     (cond
+      [(< n 84) (list-ref input-list 5)]
       [(< n 61) (list-ref input-list 0)]
       [(< n 76) (list-ref input-list 1)]
       [(< n 78) (list-ref input-list 2)]
       [(< n 79) (list-ref input-list 3)]
       [(< n 81) (list-ref input-list 4)]
-      [(< n 84) (list-ref input-list 5)]
+      ;[(< n 84) (list-ref input-list 5)]
       [(< n 99) (list-ref input-list 6)]
       [(< n 100) (list-ref input-list 7)]
       [else (error "random number")])))
@@ -387,9 +393,9 @@
 ;  Swaps the store house with tile with 'v'
 
 (define (swap-store-house b v)
-    (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
-        (values (replace b 0 0 v) (gen-input))
-        (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
+  (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
+      (values (replace b 0 0 v) (gen-input))
+      (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
 
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
 ;                                       a. symbol means call decide-move with new x y
@@ -415,34 +421,33 @@
        ;large-chest
        [(tile-val? b x y 'large-chest)
         (values (replace b x y 'blank) v)]
-       ; ;imperial-bot
-       ;        [(symbol=? 'imperial-robot v)
-       ;         (cond
-       ;           [(tile-val? b x y 'bear)
-       ;            (values (replace b x y 'tombstone) #f)]
-       ;           [(tile-val? b x y 'ninja-bear)
-       ;            (values (replace b x y 'tombstone) #f)]
-       ;           [(tile-val? b x y 'blank) 
-       ;            (let loop 
-       ;              (let-values ([(x1 y1) (read-inputs b v)])
-       ;                (if (tile-val? b x1 y1 'blank)
-       ;                    (loop)
-       ;                    (values (replace b x1 y1 'blank) #f))))]
-       ;        ;crystal
-       ;        [(symbol=? 'crystal v)
-       ;         (cond
-       ;           [(not (tile-val? b x y 'blank))
-       ;            (let loop
-       ;              (let-values ([(x1 y1) (read-inputs b v)])
-       ;                (if (not (tile-val? b x1 y1 'blank))
-       ;                    (loop)
-       ;                    (replace-crystal b x y v))))]
-       ;           [else (replace-crystal b x y v)]
-       ;everything-else
-       [else
-        (if (not (tile? b x y 'blank))
-            (values b v)
-            (values (collapse b x y v) #f))])])
+       ;imperial-robot
+       [(symbol=? 'imperial-robot v)
+        (cond
+          [(tile-val? b x y 'bear)
+           (values (multi-collapse (replace b x y 'tombstone) x y 'tombstone) #f)]
+          [(tile-val? b x y 'ninja-bear)
+           (values (multi-collapse (replace b x y 'tombstone) x y 'tombstone) #f)]
+          [(tile-val? b x y 'blank)
+           (values b v)]
+          [else (values (replace b x y 'blank) #f)])]
+       
+;       ;crystal
+;       [(symbol=? 'crystal v)
+;        (cond
+;          [(not (tile-val? b x y 'blank))
+;           (let loop
+;             (let-values ([(x1 y1) (read-inputs b v)])
+;               (if (not (tile-val? b x1 y1 'blank))
+;                   (loop)
+;                   (replace-crystal b x y v))))]
+;          [else (replace-crystal b x y v)]
+       
+          ;everything-else
+          [else
+           (if (not (tile-val? b x y 'blank))
+               (values b v)
+               (values (collapse b x y v) #f))])]))
 
 ;read-inputs : board symbol -> (values num num)
 ; Displays next tile 'v' and reads 'x'  and 'y' coordinate inputs
@@ -497,4 +502,4 @@
      board]))
 
 ;(multi-collapse b3 1 0 'grass)
-(display-board (move (move (move b1))))
+(display-board (move (move (move b5))))
