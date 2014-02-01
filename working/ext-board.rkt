@@ -59,7 +59,7 @@
 
 ; A list of all possible tiles that can be collapsed by a crystal
 (define crystal-list '(floating-castle chest castle mansion cathedral 
-                       house church hut tombstone tree bush grass))
+                                       house church hut tombstone tree bush grass))
 
 (define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
                  (list (tile 'blank 0 1) (tile 'grass 1 1))))
@@ -408,6 +408,7 @@
       (values (replace b 0 0 v) (gen-input))
       (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
 
+
 ; crystal-count : board num num -> list
 ;  Return a list of all possible collapsable neighbours of ('x','y')
 
@@ -418,6 +419,11 @@
                        2))
     list i))
 
+(module+ test
+  (check-equal? (crystal-count b5 1 0) (list 'bush))
+  (check-equal? (crystal-count b5 3 3) (list 'tombstone))
+  (check-equal? (crystal-count b5 3 0) empty))
+
 ; collapse-crystal : board num num -> boolean [board-or-#f]
 ;  Places crystal at ('x','y') and collapses 'b'
 
@@ -427,7 +433,20 @@
       [(empty? l) (replace b x y 'rock)]
       [(cons? l)
        (collapse b x y (first l))])))
-  
+
+(module+ test
+  (check-equal? (crystal-collapse b1 2 1) 
+                (list
+                 (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
+                 (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'bush 2 1))
+                 (list (tile 'blank 0 2) (tile 'blank 1 2) (tile 'blank 2 2))))
+  (check-equal? (crystal-collapse b1 2 0)
+                (list
+                 (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'rock 2 0))
+                 (list (tile 'grass 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
+                 (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2)))))
+
+
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
 ;                                       a. symbol means call decide-move with new x y
 ;                                       b. false means move complete; go to next move
@@ -534,4 +553,4 @@
      board]))
 
 ;(multi-collapse b3 1 0 'grass)
-(display-board (move (move (move b5))))
+;(display-board (move (move (move b5))))
