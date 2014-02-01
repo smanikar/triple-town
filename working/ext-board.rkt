@@ -204,7 +204,6 @@
 (define (replace b x y v)
   (cond
     [(empty? b) empty]
-    [(false? b) #f]
     [(cons? b) (if (= y 0)
                    (cons (replace-row (first b) x v)
                          (rest b))
@@ -225,21 +224,18 @@
 ; board num num symbol list -> (list [list-or-#f], num)
 
 (define (count-neighbours b x y v l)
-  (cond [(empty? b) (list #f 0)]
-        [(false? b) (list #f 0)]
-        [(cons? b)
-         (if (valid-neighbour? b x y v l)
-             (let* ([t (get-tile b x y)]
-                    [l1 (count-neighbours b x (sub1 y) v (cons t l))]     ;north
-                    [l2 (count-neighbours b x (add1 y) v (car l1))]       ;south
-                    [l3 (count-neighbours b (add1 x) y v (car l2))]       ;east
-                    [l4 (count-neighbours b (sub1 x) y v (car l3))])      ;west
-               (list (car l4) (+ 1 (cadr l1) (cadr l2) (cadr l3) (cadr l4))))
-             (list l 0))]))
+  (if (valid-neighbour? b x y v l)
+      (let* ([t (get-tile b x y)]
+             [l1 (count-neighbours b x (sub1 y) v (cons t l))]     ;north
+             [l2 (count-neighbours b x (add1 y) v (car l1))]       ;south
+             [l3 (count-neighbours b (add1 x) y v (car l2))]       ;east
+             [l4 (count-neighbours b (sub1 x) y v (car l3))])      ;west
+        (list (car l4) (+ 1 (cadr l1) (cadr l2) (cadr l3) (cadr l4))))
+      (list l 0)))
 
 (module+ test
-  (check-equal? (count-neighbours empty -1 -1 'cons empty) (list #f 0))
-  (check-equal? (count-neighbours t1 -1 -1 'cons empty) (list empty 0))
+  ;(check-equal? (count-neighbours empty -1 -1 'cons empty) (list #f 0))
+  ;(check-equal? (count-neighbours t1 -1 -1 'cons empty) (list empty 0))
   (check-equal? (count-neighbours t1 1 1 'cons empty) (list empty 0))
   (check-equal? (count-neighbours 
                  t1 1 1 'grass (list (tile 'grass 1 1))) 
@@ -254,23 +250,19 @@
 ; board num num symbol list -> (list boolean [board-or-#f], list)
 
 (define (replace-neighbours b x y v l)
-  (cond
-    [(empty? b) (list #f l)]
-    [(false? b) (list #f l)]
-    [(cons? b)
-     (if (valid-neighbour? b x y v l)
-         (let* ([t (get-tile b x y)]
-                [b0 (replace b x y 'blank)]
-                [l1 (replace-neighbours b0 x (sub1 y) v (cons t l))]       ;north
-                [l2 (replace-neighbours (car l1) x (add1 y) v (cadr l1))]  ;south
-                [l3 (replace-neighbours (car l2) (add1 x) y v (cadr l2))]  ;east
-                [l4 (replace-neighbours (car l3) (sub1 x) y v (cadr l3))]) ;west
-           l4)
-         (list b l))]))
+  (if (valid-neighbour? b x y v l)
+      (let* ([t (get-tile b x y)]
+             [b0 (replace b x y 'blank)]
+             [l1 (replace-neighbours b0 x (sub1 y) v (cons t l))]       ;north
+             [l2 (replace-neighbours (car l1) x (add1 y) v (cadr l1))]  ;south
+             [l3 (replace-neighbours (car l2) (add1 x) y v (cadr l2))]  ;east
+             [l4 (replace-neighbours (car l3) (sub1 x) y v (cadr l3))]) ;west
+        l4)
+      (list b l)))
 
 (module+ test
-  (check-equal? (replace-neighbours empty -1 -1 'cons empty) (list #f empty))
-  (check-equal? (replace-neighbours t1 -1 -1 'cons empty) (list t1 empty))
+  ;(check-equal? (replace-neighbours empty -1 -1 'cons empty) (list #f empty))
+  ;(check-equal? (replace-neighbours t1 -1 -1 'cons empty) (list t1 empty))
   (check-equal? (replace-neighbours t1 1 1 'cons empty) (list t1 empty))
   (check-equal? (replace-neighbours 
                  t1 1 1 'grass (list (tile 'grass 1 1))) 
@@ -291,17 +283,12 @@
 ; place-tile : board num num symbol -> boolean [board-or-#f]
 ;  Places on board and returns if place-tile was successful
 (define (place-tile b x y v)
-  (cond 
-    [(empty? b) #f]
-    [(false? b) #f]
-    [(cons? b)
-     (and (on-board? x y (length b))
-          (and (symbol=? (tile-v (get-tile b x y)) 'blank)
-               (replace b x y v)))]))
+  (and (symbol=? (tile-v (get-tile b x y)) 'blank)
+       (replace b x y v)))
 
 (module+ test
-  (check-equal? (place-tile empty -1 -1 'reddit) #f)
-  (check-equal? (place-tile t1 -1 -1 'reddit) #f)
+  ;(check-equal? (place-tile empty -1 -1 'reddit) #f)
+  ;(check-equal? (place-tile t1 -1 -1 'reddit) #f)
   (check-equal? (place-tile t1 1 1 'reddit) #f)
   (check-equal? (place-tile t1 0 1 'reddit)
                 (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
@@ -316,23 +303,19 @@
 ;  Try replace-neighbours as many times till it reurns #f
 
 (define (multi-collapse b x y v)
-  (cond
-    [(empty? b) #f]
-    [(false? b) #f]
-    [(cons? b)
-     (let loop ([board b]
-                [value v]
-                [count (cadr (count-neighbours b x y v empty))])
-       (if (> count 2)
-           (let* ([b1 (replace (car (replace-neighbours board x y value empty))
-                               x y (next-tile value))]
-                  [c1 (cadr (count-neighbours b1 x y (next-tile value) empty))])
-             (loop b1 (next-tile v) c1))
-           board))]))
+  (let loop ([board b]
+             [value v]
+             [count (cadr (count-neighbours b x y v empty))])
+    (if (> count 2)
+        (let* ([b1 (replace (car (replace-neighbours board x y value empty))
+                            x y (next-tile value))]
+               [c1 (cadr (count-neighbours b1 x y (next-tile value) empty))])
+          (loop b1 (next-tile v) c1))
+        board)))
 
 (module+ test
-  (check-equal? (multi-collapse empty -1 -1 'grass) #f)
-  (check-equal? (multi-collapse t1 -1 -1 'grass) t1)
+  ;(check-equal? (multi-collapse empty -1 -1 'grass) #f)
+  ;(check-equal? (multi-collapse t1 -1 -1 'grass) t1)
   (check-equal? (multi-collapse t1 1 1 'reddit) t1)
   (check-equal? (multi-collapse (list (list (tile 'blank 0 0) (tile 'grass 1 0)) 
                                       (list (tile 'grass 0 1) (tile 'grass 1 1)))
@@ -355,16 +338,12 @@
 ;  Places a tile on board and collapses it
 
 (define (collapse b x y v)
-  (cond
-    [(empty? b) #f]
-    [(false? b) #f]
-    [(cons? b)
-     (let ([r (place-tile b x y v)])
-       (if (false? r) b (multi-collapse r x y v)))]))
+  (let ([r (place-tile b x y v)])
+    (if (false? r) b (multi-collapse r x y v))))
 
 (module+ test
-  (check-equal? (collapse empty -1 -1 'grass) #f)
-  (check-equal? (collapse t1 -1 -1 'grass) t1)
+  ;(check-equal? (collapse empty -1 -1 'grass) #f)
+  ;(check-equal? (collapse t1 -1 -1 'grass) t1)
   (check-equal? (collapse t1 1 1 'reddit) t1)
   (check-equal? (collapse (list (list (tile 'blank 0 0) (tile 'grass 1 0)) 
                                 (list (tile 'blank 0 1) (tile 'grass 1 1)))
@@ -407,6 +386,18 @@
   (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
       (values (replace b 0 0 v) (gen-input))
       (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
+
+; values->list : values -> list
+;  Converts a set of values into a list of the same values
+
+(define-syntax-rule (values->list a)
+  (call-with-values (λ () a) list))
+
+(module+ test
+  (check-equal? (values->list (swap-store-house t1 'bear))
+                (list (list (list (tile 'bear 0 0) (tile 'blank 1 0)) 
+                            (list (tile 'blank 0 1) (tile 'grass 1 1)))
+                      'grass)))
 
 
 ; crystal-count : board num num -> list
@@ -458,8 +449,10 @@
 
 (define (decide-move b x y v)
   (cond
-    [(empty? b) #f]
-    [(false? b) b]
+    [(empty? b) (values empty #f)]
+    [(false? b) (values b #f)]
+    [(not (on-board? x y (length b)))
+     (values b #f)]
     [(cons? b)
      (cond
        ;store-house
@@ -500,6 +493,14 @@
             (values b v)
             (values (collapse b x y v) #f))])]))
 
+(module+ test
+  (check-equal? (values->list (decide-move #f -1 -1 'blank))
+                (list #f #f))
+  (check-equal? (values->list (decide-move empty -1 -1 'blank))
+                (list empty #f))
+  (check-equal? (values->list (decide-move b1 -1 -1 'blank))
+                (list b1 #f)))
+
 ;read-inputs : board symbol -> (values num num)
 ; Displays next tile 'v' and reads 'x'  and 'y' coordinate inputs
 
@@ -513,7 +514,6 @@
 ; Moves 'bear s and 'ninja-bear s
 
 (define (move-bears b) b)
-
 
 ;move : board -> boolean
 ; Displays board, reads new tile, collapses board, displays board
