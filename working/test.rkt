@@ -2,6 +2,20 @@
 (require rackunit)
 (define-struct tile (x (y #:mutable)) #:transparent)
 
+(define (my-func x y)
+  (values (add1 x) (add1 y)))
+
+(define (values->list a)
+  (call-with-values (λ () a) list))
+
+(define-syntax-rule (check-values (values v ...) e)
+    (check-equal? (list v ...) (call-with-values (lambda () e) list)))
+
+  ;; Example:
+(check-values (values (+ 1 2) (+ 3 4))
+              (values 3 7))
+;(check-values (my-func 2 3) (values 3 4))
+
 
 ;(define (loop-until start done? next f)
 ;  (let loop ([i start])
@@ -14,26 +28,26 @@
 ;            (λ (x) (add1 x))
 ;            (λ (x) (printf "~a\n" x))))
 
-(define (funct)
-  (let loop ([i 5]
-             [j 12]
-             [k -10])
-    (unless (> (+ i j k) 12)
-      (printf "~a ~a ~a\n" i j k)
-      (loop (add1 i)
-            (sub1 j)
-            (add1 k)))))
-
-(funct)
-
-(define (foo x )
-  (if (> x 3)
-      (define a 7)
-      (define b 8)
-      (+ a b x)
-      x))
-
-(foo 4)
+;(define (funct)
+;  (let loop ([i 5]
+;             [j 12]
+;             [k -10])
+;    (unless (> (+ i j k) 12)
+;      (printf "~a ~a ~a\n" i j k)
+;      (loop (add1 i)
+;            (sub1 j)
+;            (add1 k)))))
+;
+;(funct)
+;
+;(define (foo x )
+;  (if (> x 3)
+;      (define a 7)
+;      (define b 8)
+;      (+ a b x)
+;      x))
+;
+;(foo 4)
 
 ;(define (fun3 x)
 ;  (if (> x 3) 
