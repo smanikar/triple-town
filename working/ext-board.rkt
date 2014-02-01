@@ -19,8 +19,9 @@
     [(symbol=? cur-tile 'church)  'cathedral]
     [(symbol=? cur-tile 'cathedral)  'chest]
     [(symbol=? cur-tile 'chest) 'large-chest]
-    [(symbol=? cur-tile 'large-chest) 'rock]
+    ;[(symbol=? cur-tile 'large-chest) 'rock]
     [(symbol=? cur-tile 'rock) 'mountain]
+    [(symbol=? cur-tile 'mountain) 'large-chest]
     [else (error (format "not a tile: ~s~n" cur-tile))]))
 
 (module+ test 
@@ -36,8 +37,9 @@
   (check-equal? (next-tile 'church) 'cathedral)
   (check-equal? (next-tile 'cathedral) 'chest)
   (check-equal? (next-tile 'chest) 'large-chest)
-  (check-equal? (next-tile 'large-chest) 'rock)
+  ;(check-equal? (next-tile 'large-chest) 'rock)
   (check-equal? (next-tile 'rock) 'mountain)
+  (check-equal? (next-tile 'mountain) 'large-chest)
   (check-error (next-tile 'test) "not a tile: test")
   )
 
@@ -54,6 +56,10 @@
                     'imperial-robot 
                     'bear 
                     'ninja-bear))
+
+; A list of all possible tiles that can be collapsed by a crystal
+(define crystal-list '(floating-castle chest castle mansion cathedral 
+                       house church hut tombstone tree bush grass))
 
 (define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
                  (list (tile 'blank 0 1) (tile 'grass 1 1))))
@@ -85,19 +91,24 @@
                  (list (tile 'bush  0 2) (tile 'bush  1 2) (tile 'tombstone 2 2) (tile 'blank 3 2))
                  (list (tile 'tree  0 3) (tile 'bear  1 3) (tile 'tombstone 2 3) (tile 'blank 3 3))))
 
+(define b6 (list (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'bush 2 0) (tile 'blank 3 0))
+                 (list (tile 'hut  0 1) (tile 'grass  1 1) (tile 'bush 2 1) (tile 'bear  3 1))
+                 (list (tile 'hut  0 2) (tile 'blank  1 2) (tile 'bush 2 2) (tile 'mansion 3 2))
+                 (list (tile 'tree  0 3) (tile 'tree  1 3) (tile 'bush 2 3) (tile 'mansion 3 3))))
+
 ;gen:input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
 
 (define (gen-input)
   (let ([n (random 100)])
     (cond
-      [(< n 84) (list-ref input-list 5)]
+      [(< n 84) (list-ref input-list 4)]
       [(< n 61) (list-ref input-list 0)]
       [(< n 76) (list-ref input-list 1)]
       [(< n 78) (list-ref input-list 2)]
       [(< n 79) (list-ref input-list 3)]
       [(< n 81) (list-ref input-list 4)]
-      ;[(< n 84) (list-ref input-list 5)]
+      [(< n 84) (list-ref input-list 5)]
       [(< n 99) (list-ref input-list 6)]
       [(< n 100) (list-ref input-list 7)]
       [else (error "random number")])))
@@ -397,6 +408,26 @@
       (values (replace b 0 0 v) (gen-input))
       (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
 
+; crystal-count : board num num -> list
+;  Return a list of all possible collapsable neighbours of ('x','y')
+
+(define (crystal-count b x y)
+  (for/list ([i crystal-list]
+             #:when (> (cadr 
+                        (count-neighbours (replace b x y i) x y i empty)) 
+                       2))
+    list i))
+
+; collapse-crystal : board num num -> boolean [board-or-#f]
+;  Places crystal at ('x','y') and collapses 'b'
+
+(define (crystal-collapse b x y)
+  (let ([l (crystal-count  b x y)])
+    (cond
+      [(empty? l) (replace b x y 'rock)]
+      [(cons? l)
+       (collapse b x y (first l))])))
+  
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
 ;                                       a. symbol means call decide-move with new x y
 ;                                       b. false means move complete; go to next move
@@ -415,39 +446,40 @@
        ;store-house
        [(and (equal? x 0) (equal? y 0))
         (swap-store-house b v)]
+       
        ;chest
        [(tile-val? b x y 'chest)
         (values (replace b x y 'blank) v)]
+       
        ;large-chest
        [(tile-val? b x y 'large-chest)
         (values (replace b x y 'blank) v)]
+       
        ;imperial-robot
        [(symbol=? 'imperial-robot v)
         (cond
           [(tile-val? b x y 'bear)
-           (values (multi-collapse (replace b x y 'tombstone) x y 'tombstone) #f)]
+           (values (multi-collapse 
+                    (replace b x y 'tombstone) x y 'tombstone) #f)]
           [(tile-val? b x y 'ninja-bear)
-           (values (multi-collapse (replace b x y 'tombstone) x y 'tombstone) #f)]
+           (values (multi-collapse 
+                    (replace b x y 'tombstone) x y 'tombstone) #f)]
           [(tile-val? b x y 'blank)
            (values b v)]
           [else (values (replace b x y 'blank) #f)])]
        
-;       ;crystal
-;       [(symbol=? 'crystal v)
-;        (cond
-;          [(not (tile-val? b x y 'blank))
-;           (let loop
-;             (let-values ([(x1 y1) (read-inputs b v)])
-;               (if (not (tile-val? b x1 y1 'blank))
-;                   (loop)
-;                   (replace-crystal b x y v))))]
-;          [else (replace-crystal b x y v)]
+       ;crystal
+       [(symbol=? 'crystal v)
+        (cond
+          [(not (tile-val? b x y 'blank))
+           (values b v)]
+          [else (values (crystal-collapse b x y) #f)])]
        
-          ;everything-else
-          [else
-           (if (not (tile-val? b x y 'blank))
-               (values b v)
-               (values (collapse b x y v) #f))])]))
+       ;everything-else
+       [else
+        (if (not (tile-val? b x y 'blank))
+            (values b v)
+            (values (collapse b x y v) #f))])]))
 
 ;read-inputs : board symbol -> (values num num)
 ; Displays next tile 'v' and reads 'x'  and 'y' coordinate inputs
