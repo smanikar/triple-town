@@ -5,7 +5,7 @@
 (define (my-func x y)
   (values (add1 x) (add1 y)))
 
-(define (values->list a)
+(define-syntax-rule (values->list a)
   (call-with-values (λ () a) list))
 
 (define-syntax-rule (check-values (values v ...) e)
