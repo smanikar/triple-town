@@ -2,18 +2,28 @@
 (require rackunit)
 (define-struct tile (x (y #:mutable)) #:transparent)
 
-(define (my-func x y)
-  (values (add1 x) (add1 y)))
+(define (new-fun n)
+  (case n
+    [(grass tree) 1]
+    [('grass) 2]
+    ['grass 3]))
 
-(define-syntax-rule (values->list a)
-  (call-with-values (λ () a) list))
+(new-fun 'grass)
+(new-fun 'tree)
 
-(define-syntax-rule (check-values (values v ...) e)
-    (check-equal? (list v ...) (call-with-values (lambda () e) list)))
+;(define (my-func x y)
+;  (values (add1 x) (add1 y)))
+;
+;(define-syntax-rule (values->list a)
+;  (call-with-values (λ () a) list))
+;
+;(define-syntax-rule (check-values (values v ...) e)
+;    (check-equal? (list v ...) 
+;       (call-with-values (lambda () e) list)))
 
   ;; Example:
-(check-values (values (+ 1 2) (+ 3 4))
-              (values 3 7))
+;(check-values (values (+ 1 2) (+ 3 4))
+;              (values 3 7))
 ;(check-values (my-func 2 3) (values 3 4))
 
 
