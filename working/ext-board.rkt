@@ -280,25 +280,6 @@
                  (list (tile 'grass 2 2) (tile 'grass 1 2) 
                        (tile 'grass 0 1) (tile 'grass 0 2)))))
 
-; place-tile : board num num symbol -> boolean [board-or-#f]
-;  Places on board and returns if place-tile was successful
-(define (place-tile b x y v)
-  (and (symbol=? (tile-v (get-tile b x y)) 'blank)
-       (replace b x y v)))
-
-(module+ test
-  ;(check-equal? (place-tile empty -1 -1 'reddit) #f)
-  ;(check-equal? (place-tile t1 -1 -1 'reddit) #f)
-  (check-equal? (place-tile t1 1 1 'reddit) #f)
-  (check-equal? (place-tile t1 0 1 'reddit)
-                (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-                      (list (tile 'reddit 0 1) (tile 'grass 1 1))))
-  (check-equal? (place-tile b2 2 1 'random)
-                (list
-                 (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
-                 (list (tile 'blank 0 1) (tile 'hut 1 1) (tile 'random 2 1))
-                 (list (tile 'blank 0 2) (tile 'bush 1 2) (tile 'blank 2 2)))))
-
 ; multi-collapse : board num num sybmol -> boolean [board-or-#f]
 ;  Try replace-neighbours as many times till it reurns #f
 
@@ -338,13 +319,12 @@
 ;  Places a tile on board and collapses it
 
 (define (collapse b x y v)
-  (let ([r (place-tile b x y v)])
-    (if (false? r) b (multi-collapse r x y v))))
+  (multi-collapse (replace b x y v) x y v))
 
 (module+ test
   ;(check-equal? (collapse empty -1 -1 'grass) #f)
   ;(check-equal? (collapse t1 -1 -1 'grass) t1)
-  (check-equal? (collapse t1 1 1 'reddit) t1)
+  ;(check-equal? (collapse t1 1 1 'reddit) t1)
   (check-equal? (collapse (list (list (tile 'blank 0 0) (tile 'grass 1 0)) 
                                 (list (tile 'blank 0 1) (tile 'grass 1 1)))
                           0 1 'grass)
@@ -363,9 +343,9 @@
   (check-equal? (collapse b4 0 2 'bush)
                 (list
                  (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'tree 0 1) (tile 'bush 1 1) (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'bush 0 2) (tile 'bush 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'tree 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3)))))
+                 (list (tile 'blank 0 1) (tile 'blank 1 1) (tile 'grass 2 1) (tile 'blank 3 1))
+                 (list (tile 'hut   0 2) (tile 'blank 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
+                 (list (tile 'blank 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3)))))
 
 ; tile-val? : board num num symbol -> boolean
 ;  Returns true if the value on tile ('x','y') is 'v'
@@ -416,7 +396,7 @@
   (check-equal? (crystal-count b5 3 0) empty))
 
 ; collapse-crystal : board num num -> boolean [board-or-#f]
-;  Places crystal at ('x','y') and collapses 'b'
+;  Places crystal at ('x','y') and s 'b'
 
 (define (crystal-collapse b x y)
   (let ([l (crystal-count  b x y)])
@@ -451,47 +431,34 @@
   (cond
     [(empty? b) (values empty #f)]
     [(false? b) (values b #f)]
+    [(and (equal? x 0) (equal? y 0))
+     (swap-store-house b v)]
     [(not (on-board? x y (length b)))
      (values b #f)]
-    [(cons? b)
-     (cond
-       ;store-house
-       [(and (equal? x 0) (equal? y 0))
-        (swap-store-house b v)]
-       
-       ;chest
-       [(tile-val? b x y 'chest)
-        (values (replace b x y 'blank) v)]
-       
-       ;large-chest
-       [(tile-val? b x y 'large-chest)
-        (values (replace b x y 'blank) v)]
-       
-       ;imperial-robot
-       [(symbol=? 'imperial-robot v)
+    [else
+     (case (tile-v (get-tile b x y))
+       [(blank) ; (x,y) is blank
         (cond
-          [(tile-val? b x y 'bear)
-           (values (multi-collapse 
-                    (replace b x y 'tombstone) x y 'tombstone) #f)]
-          [(tile-val? b x y 'ninja-bear)
-           (values (multi-collapse 
-                    (replace b x y 'tombstone) x y 'tombstone) #f)]
-          [(tile-val? b x y 'blank)
+          ; imperial-robot
+          [(symbol=? v 'imperial-robot)
            (values b v)]
-          [else (values (replace b x y 'blank) #f)])]
-       
-       ;crystal
-       [(symbol=? 'crystal v)
-        (cond
-          [(not (tile-val? b x y 'blank))
-           (values b v)]
-          [else (values (crystal-collapse b x y) #f)])]
-       
-       ;everything-else
-       [else
-        (if (not (tile-val? b x y 'blank))
-            (values b v)
-            (values (collapse b x y v) #f))])]))
+          ; crystal
+          [(symbol=? v 'crystal)
+           (values (crystal-collapse b x y) #f)]
+          [else (values (collapse b x y v) #f)])]
+       ; chest or large-chest
+       [(chest large-chest) 
+        (values (replace b x y 'blank) v)]
+       ; bear or ninja-bear
+       [(bear ninja-bear)
+        (if (symbol=? 'imperial-robot v)
+            (values (collapse b x y 'tombstone) #f)
+            (values b v))]
+       ; everything else
+       [else 
+        (if (symbol=? v 'imperial-robot)
+            (values (replace b x y 'blank) #f)
+            (values b v))])]))
 
 (module+ test
   (check-equal? (values->list (decide-move #f -1 -1 'blank))
@@ -552,5 +519,5 @@
      (display-board (rest board))
      board]))
 
-;(multi-collapse b3 1 0 'grass)
-;(display-board (move (move (move b5))))
+;(decide-move b3 0 0 'grass)
+(display-board (move (move (move b5))))
