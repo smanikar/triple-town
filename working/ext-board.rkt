@@ -76,25 +76,41 @@
                  (list (tile 'blank 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
                  (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
 
-(define b3 (list (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'grass 2 0) (tile 'blank 3 0))
-                 (list (tile 'bush  0 1) (tile 'grass 1 1) (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'bush  0 2) (tile 'grass 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'grass 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3))))
+(define b3 (list (list (tile 'blank 0 0) (tile 'grass 1 0) 
+                       (tile 'grass 2 0) (tile 'blank 3 0))
+                 (list (tile 'bush  0 1) (tile 'grass 1 1) 
+                       (tile 'grass 2 1) (tile 'blank 3 1))
+                 (list (tile 'bush  0 2) (tile 'grass 1 2) 
+                       (tile 'blank 2 2) (tile 'blank 3 2))
+                 (list (tile 'grass 0 3) (tile 'blank 1 3) 
+                       (tile 'grass 2 3) (tile 'blank 3 3))))
 
-(define b4 (list (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'tree  0 1) (tile 'bush  1 1) (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'bush  0 2) (tile 'bush  1 2) (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'tree  0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3))))
+(define b4 (list (list (tile 'blank 0 0) (tile 'blank 1 0) 
+                       (tile 'blank 2 0) (tile 'blank 3 0))
+                 (list (tile 'tree  0 1) (tile 'bush  1 1) 
+                       (tile 'grass 2 1) (tile 'blank 3 1))
+                 (list (tile 'bush  0 2) (tile 'bush  1 2) 
+                       (tile 'blank 2 2) (tile 'blank 3 2))
+                 (list (tile 'tree  0 3) (tile 'blank 1 3) 
+                       (tile 'grass 2 3) (tile 'blank 3 3))))
 
-(define b5 (list (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'tree  0 1) (tile 'bush  1 1) (tile 'grass 2 1) (tile 'bear  3 1))
-                 (list (tile 'bush  0 2) (tile 'bush  1 2) (tile 'tombstone 2 2) (tile 'blank 3 2))
-                 (list (tile 'tree  0 3) (tile 'bear  1 3) (tile 'tombstone 2 3) (tile 'blank 3 3))))
+(define b5 (list (list (tile 'blank 0 0) (tile 'blank 1 0) 
+                       (tile 'blank 2 0) (tile 'blank 3 0))
+                 (list (tile 'tree  0 1) (tile 'bush  1 1) 
+                       (tile 'grass 2 1) (tile 'bear  3 1))
+                 (list (tile 'bush  0 2) (tile 'bush  1 2) 
+                       (tile 'tombstone 2 2) (tile 'blank 3 2))
+                 (list (tile 'tree  0 3) (tile 'bear  1 3)
+                       (tile 'tombstone 2 3) (tile 'blank 3 3))))
 
-(define b6 (list (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'bush 2 0) (tile 'blank 3 0))
-                 (list (tile 'hut  0 1) (tile 'grass  1 1) (tile 'bush 2 1) (tile 'bear  3 1))
-                 (list (tile 'hut  0 2) (tile 'blank  1 2) (tile 'bush 2 2) (tile 'mansion 3 2))
-                 (list (tile 'tree  0 3) (tile 'tree  1 3) (tile 'bush 2 3) (tile 'mansion 3 3))))
+(define b6 (list (list (tile 'blank 0 0) (tile 'grass 1 0) 
+                       (tile 'bush 2 0) (tile 'blank 3 0))
+                 (list (tile 'hut  0 1) (tile 'grass  1 1) 
+                       (tile 'bush 2 1) (tile 'bear  3 1))
+                 (list (tile 'hut  0 2) (tile 'blank  1 2) 
+                       (tile 'bush 2 2) (tile 'mansion 3 2))
+                 (list (tile 'tree  0 3) (tile 'tree  1 3) 
+                       (tile 'bush 2 3) (tile 'mansion 3 3))))
 
 ;gen:input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
@@ -102,7 +118,6 @@
 (define (gen-input)
   (let ([n (random 100)])
     (cond
-      [(< n 84) (list-ref input-list 4)]
       [(< n 61) (list-ref input-list 0)]
       [(< n 76) (list-ref input-list 1)]
       [(< n 78) (list-ref input-list 2)]
@@ -310,10 +325,14 @@
                       (list (tile 'blank 0 1) (tile 'bush  1 1))))
   (check-equal? (multi-collapse b3 1 1 'grass)
                 (list
-                 (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'blank 0 1) (tile 'tree 1 1) (tile 'blank 2 1) (tile 'blank 3 1))
-                 (list (tile 'blank 0 2) (tile 'blank 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'grass 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3)))))
+                 (list (tile 'blank 0 0) (tile 'blank 1 0) 
+                       (tile 'blank 2 0) (tile 'blank 3 0))
+                 (list (tile 'blank 0 1) (tile 'tree 1 1) 
+                       (tile 'blank 2 1) (tile 'blank 3 1))
+                 (list (tile 'blank 0 2) (tile 'blank 1 2)
+                       (tile 'blank 2 2) (tile 'blank 3 2))
+                 (list (tile 'grass 0 3) (tile 'blank 1 3) 
+                       (tile 'grass 2 3) (tile 'blank 3 3)))))
 
 ; collapse : board num num sybmol -> boolean [board-or-#f]
 ;  Places a tile on board and collapses it
@@ -342,10 +361,14 @@
                  (list (tile 'blank 0 2) (tile 'tree  1 2) (tile 'blank 2 2))))
   (check-equal? (collapse b4 0 2 'bush)
                 (list
-                 (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'blank 0 1) (tile 'blank 1 1) (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'hut   0 2) (tile 'blank 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'blank 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3)))))
+                 (list (tile 'blank 0 0) (tile 'blank 1 0)
+                       (tile 'blank 2 0) (tile 'blank 3 0))
+                 (list (tile 'blank 0 1) (tile 'blank 1 1) 
+                       (tile 'grass 2 1) (tile 'blank 3 1))
+                 (list (tile 'hut   0 2) (tile 'blank 1 2) 
+                       (tile 'blank 2 2) (tile 'blank 3 2))
+                 (list (tile 'blank 0 3) (tile 'blank 1 3) 
+                       (tile 'grass 2 3) (tile 'blank 3 3)))))
 
 ; tile-val? : board num num symbol -> boolean
 ;  Returns true if the value on tile ('x','y') is 'v'
@@ -497,6 +520,19 @@
                (loop b1 v1)
                (move-bears b1)))))]))
 
+; generate-board : num -> board
+;  Generates an empty board of size n X n
+(define (generate-board n)
+  (for/list ([i (range n)])
+    (for/list ([j (range n)])
+      list (tile 'blank i j))))
+
+; main-game-loop : void -> void
+;  Runs the main loop of the game. Runs infinitely.
+(define (main-game-loop)
+  (let loop ([b (generate-board 6)])
+    (loop (move b))))
+    
 ;display-board-row : list-of-tiles -> list-of-tiles
 ; Displays a row of tiles
 
@@ -516,8 +552,7 @@
     [(cons? board)
      (display-board-row (first board))
      (printf "\n")
-     (display-board (rest board))
-     board]))
+     (display-board (rest board))]))
 
 ;(decide-move b3 0 0 'grass)
-(display-board (move (move (move b5))))
+;(display-board (move (move (move b5))))
