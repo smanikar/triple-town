@@ -540,7 +540,11 @@
   (cond
     [(empty? row) empty]
     [(cons? row)
-     (printf " ~a " (tile-v (first row)))
+     (let ([s (symbol->string (tile-v (first row)))])
+       (printf "~a" s)
+       (for ([i (range (- 15 (string-length s)))])
+         (printf "~a" " "))
+       (printf "|"))
      (display-board-row (rest row))]))
 
 ;display-board : board -> board
