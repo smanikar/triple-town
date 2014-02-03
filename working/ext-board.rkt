@@ -452,12 +452,19 @@
 
 (define (decide-move b x y v)
   (cond
-    [(empty? b) (values empty #f)]
-    [(false? b) (values b #f)]
+    [(empty? b) 
+     (printf "Board is empty\n")
+     (values empty #f)]
+    [(false? b) 
+     (printf "Board is #f\n")
+     (values b #f)]
     [(and (equal? x 0) (equal? y 0))
+     (printf "Store-house swap - (~a) and (~a)\n" 
+             v (tile-v (get-tile b x y)))
      (swap-store-house b v)]
     [(not (on-board? x y (length b)))
-     (values b #f)]
+     (printf "(~a, ~a) not on board\n" x y)
+     (values b v)]
     [else
      (case (tile-v (get-tile b x y))
        [(blank) ; (x,y) is blank
@@ -489,7 +496,7 @@
   (check-equal? (values->list (decide-move empty -1 -1 'blank))
                 (list empty #f))
   (check-equal? (values->list (decide-move b1 -1 -1 'blank))
-                (list b1 #f)))
+                (list b1 'blank)))
 
 ;read-inputs : board symbol -> (values num num)
 ; Displays next tile 'v' and reads 'x'  and 'y' coordinate inputs
@@ -497,8 +504,17 @@
 (define (read-inputs b v)
   (display-board b)
   (printf "Tile - ~a\n" v)
-  (printf "Enter (x,y) - \n")
-  (values (read) (read)))
+  (printf "Enter exact inegers (x,y) - \n")
+  ;(values (read) (read)))
+  (let loop ([x (read)]
+        [y (read)])
+    (cond 
+      [(and (exact-integer? x)
+             (exact-integer? y))
+       (values x y)]
+      [else 
+       (printf "Enter exact inegers (x,y) - \n")
+       (loop (read) (read))])))
 
 ;move-bears : board -> board
 ; Moves 'bear s and 'ninja-bear s
@@ -560,3 +576,6 @@
 
 ;(decide-move b3 0 0 'grass)
 ;(display-board (move (move (move b5))))
+
+; Runs infinite game loop
+(main-game-loop)
