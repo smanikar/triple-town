@@ -23,6 +23,20 @@
 (define (make-percent l n)
   (for/list ([i l])
     (/ (* i 100) n)))
+
+(define sum-list (list 0 0 0 0 0 0 0 0))
+
+(define (list-pos l v)
+  (for/first ([i (length l)]
+              #:when (symbol=? (list-ref l i) v))
+    i))
+   
+
+(define (test1-gen-input)
+  (for ([i (range n)])
+    (let ([lr (list-pos input-list (gen-input))])
+      (let-values ([(f r) (split-at-right sum-list (- 7 (sub1 lr)))])
+        (append f (add1 (car r)) (cdr r))))))       
     
 (define (test-gen-input)
   (let ([l (list 0 0 0 0 0 0 0 0)])
@@ -48,5 +62,5 @@
           [else (print "else")])))
     (make-percent l n)))
 
-(test-gen-input)
-'(61.01 15.01 2.01 1.01 2.01 3.01 15.01 1.01)
+(test1-gen-input)
+;'(61.01 15.01 2.01 1.01 2.01 3.01 15.01 1.01)
