@@ -25,14 +25,14 @@ If west  is true, then check NW and SW
 
 
 3/4 stuff to do
-1. cyrstal - find first match, using for/first, return board by anding return (function name of for/first is or/map)
+X 1. cyrstal - find first match, using for/first, return board by anding return (function name of for/first is or/map)
 2. abstract replace/count
-3. abstract decide-move
+X 3. test cases for decide-move
 4. write declarative programs - ie. write functions that do something for me instead of writing individual steps to get that output.
-5. use list-build to build list
-6. remove un-necessary [empty, false cases]. define board as non emtpy list
-7. fix floating-castle for 4 instead of 3.
+(NO) 5. use list-build to build list
+X 6. remove un-necessary [empty, false cases]. define board as non emtpy list
+X 7. fix floating-castle for 4 instead of 3.
 8. test gen-input by using build list or make-list
-9. replace module+ test by module test+ <name>
-0. end main-loop when board is full
+X 9. replace module+ test by module test+ <name>
+X 0. end main-loop when board is full
 
