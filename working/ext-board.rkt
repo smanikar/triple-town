@@ -1,3 +1,12 @@
+; Srikanth Manikarnike
+; U0706564
+
+; Incomplete Sections
+; 1. Bears/ninja-bears don't move
+; 2. Bears/ninja-bears do not turn into tombstones at the end
+; 3. Trapped bears do not collapse to tombstones
+
+
 #lang racket
 (require rackunit)
 (require test-engine/racket-tests)
@@ -429,7 +438,27 @@
                 (list
                  (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'rock 2 0))
                  (list (tile 'grass 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
-                 (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2)))))
+                 (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2))))
+  (check-equal? (crystal-collapse b7 2 1)
+                (list
+                 (list (tile 'blank 0 0) (tile 'tree 1 0) 
+                       (tile 'house 2 0) (tile 'house 3 0))
+                 (list (tile 'castle 0 1) (tile 'castle 1 1) 
+                       (tile 'triple-castle 2 1) (tile 'mansion 3 1))
+                 (list (tile 'bush 0 2) (tile 'blank 1 2) 
+                       (tile 'blank 2 2) (tile 'mansion 3 2))
+                 (list (tile 'bush 0 3) (tile 'blank 1 3) 
+                       (tile 'tree 2 3) (tile 'tree 3 3))))
+  (check-equal? (crystal-collapse b8 2 1)
+                (list
+                 (list (tile 'blank 0 0) (tile 'tree 1 0) 
+                       (tile 'house 2 0) (tile 'house 3 0))
+                 (list (tile 'castle 0 1) (tile 'castle 1 1) 
+                       (tile 'floating-castle 2 1) (tile 'mansion 3 1))
+                 (list (tile 'bush 0 2) (tile 'floating-castle 1 2) 
+                       (tile 'floating-castle 2 2) (tile 'mansion 3 2))
+                 (list (tile 'bush 0 3) (tile 'castle 1 3) 
+                       (tile 'tree 2 3) (tile 'tree 3 3)))))
 
 
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
@@ -556,7 +585,8 @@
                        (list (tile 'bear 0 1) (tile 'grass 1 1)))
                  0 1 'imperial-robot))
    (list
-    (list (list (tile 'grass 0 0) (tile 'blank 1 0)) (list (tile 'tombstone 0 1) (tile 'grass 1 1)))
+    (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
+          (list (tile 'tombstone 0 1) (tile 'grass 1 1)))
     #f)))
 
 ;read-inputs : board symbol -> (values num num)
