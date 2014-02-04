@@ -2,6 +2,12 @@
 (require rackunit)
 (define-struct tile (x (y #:mutable)) #:transparent)
 
+(define not false?)
+(define (true? v) (not (false? v)))
+
+(not (list 1 2))
+(true? (list 1 2))
+
 (define (new-fun n)
   (case n
     [(grass tree) 1]
