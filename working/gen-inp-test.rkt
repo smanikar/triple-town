@@ -2,6 +2,8 @@
 
 (define input-list (list 'grass 'bush 'tree 'hut 'crystal 'imperial-bot 'bear 'ninja-bear))
 
+(define expected '(61 15 2 1 2 3 15 1))
+
 (define (gen-input)
   (let ([n (random 100)])
     (cond
@@ -24,43 +26,34 @@
   (for/list ([i l])
     (/ (* i 100) n)))
 
-(define sum-list (list 0 0 0 0 0 0 0 0))
+(define (get-pos l v i)
+  (cond
+    [(empty? l) #f]
+    [(cons? l)
+     (if (symbol=? (first l) v)
+         i
+         (get-pos (rest l) v (add1 i)))]))
 
-(define (list-pos l v)
-  (for/first ([i (length l)]
-              #:when (symbol=? (list-ref l i) v))
-    i))
-   
+(define (test l n)
+  (let loop ([i 0]
+             [m (incr-list (get-pos input-list (gen-input) 0) l)])
+    (if (< i n)
+        (loop (add1 i) (incr-list (get-pos input-list (gen-input) 0) m))
+        (make-percent m n))))
 
-(define (test1-gen-input)
-  (for ([i (range n)])
-    (let ([lr (list-pos input-list (gen-input))])
-      (let-values ([(f r) (split-at-right sum-list (- 7 (sub1 lr)))])
-        (append f (add1 (car r)) (cdr r))))))       
-    
-(define (test-gen-input)
-  (let ([l (list 0 0 0 0 0 0 0 0)])
-    (for ([i (range n)])
-      (let ([inp (gen-input)])
-        (cond
-          [(symbol=? (list-ref input-list 0) inp)
-           (set! l (incr-list 0 l))]
-          [(symbol=? (list-ref input-list 1) inp)
-           (set! l (incr-list 1 l))]
-          [(symbol=? (list-ref input-list 2) inp)
-           (set! l (incr-list 2 l))]
-          [(symbol=? (list-ref input-list 3) inp)
-           (set! l (incr-list 3 l))]
-          [(symbol=? (list-ref input-list 4) inp)
-           (set! l (incr-list 4 l))]
-          [(symbol=? (list-ref input-list 5) inp)
-           (set! l (incr-list 5 l))]
-          [(symbol=? (list-ref input-list 6) inp)
-           (set! l (incr-list 6 l))]
-          [(symbol=? (list-ref input-list 7) inp)
-           (set! l (incr-list 7 l))]
-          [else (print "else")])))
-    (make-percent l n)))
+(define (diff-list l1 l2)
+  (for/list ([i l1]
+             [j l2])
+    (abs (- i j))))
 
-(test1-gen-input)
-;'(61.01 15.01 2.01 1.01 2.01 3.01 15.01 1.01)
+(define (trunc l)
+  (for/list ([i l])
+    (/ (floor (* i 100)) 100)))
+
+(define (main-program)
+  (let ([l (test (make-list (length input-list) 0) 10000.0)])
+    (printf "~a\n" expected)
+    (printf "~a\n" l)
+    (printf "~a\n" (trunc (diff-list l expected)))))
+
+(main-program)
