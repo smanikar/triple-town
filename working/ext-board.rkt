@@ -6,7 +6,6 @@
 ; 2. Bears/ninja-bears do not turn into tombstones at the end
 ; 3. Trapped bears do not collapse to tombstones
 
-
 #lang racket
 (require rackunit)
 (require test-engine/racket-tests)
@@ -420,9 +419,9 @@
 
 (define (crystal-collapse b x y)
   (let ([v (for/first ([i crystal-list]
-                       #:when (> (cadr 
-                                  (count-neighbours (replace b x y i) x y i empty)) 
-                                 2))
+                       #:when (> 
+                               (cadr (count-neighbours (replace b x y i) x y i empty)) 
+                               2))
              i)])
     (if (false? v)
         (replace b x y 'rock)
@@ -462,13 +461,17 @@
 
 
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
-;                                       a. symbol means call decide-move with new x y
-;                                       b. false means move complete; go to next move
+
 ;  Decide whether move is 
 ;   - store-house
 ;   - imperial-robot
 ;   - crystal
 ;   - select chest or large-chest 
+;   - others
+;  and take corresponding action
+
+;    a. (board symbol) means call decide-move with new x y and old v
+;    b. (board #f)     means call decide-move with new x y and v
 
 (define (decide-move b x y v)
   (cond
@@ -477,7 +480,7 @@
              v (tile-v (get-tile b x y)))
      (swap-store-house b v)]
     [(not (on-board? x y (length b)))
-     (printf "(~a, ~a) not on board\n" x y)
+     (printf "(~a, ~a) is outside the board\n" x y)
      (values b v)]
     [else
      (case (tile-v (get-tile b x y))
@@ -689,6 +692,15 @@
                                  (list (tile 'grass 1 0) (tile 'grass 1 1))))
                 #t))
 
+;(define (replace-bears b)
+;  (cond
+;    [(empty? b) empty]
+;    [(cons? b)
+;     (cons (replace-bears-row (first b)) (replac-bears (rest b)))]))
+;
+;(module+ test-replace-bears 
+;  (check-equal? (replace-bears t3)
+
 ;display-board-row : list-of-tiles -> list-of-tiles
 ; Displays a row of tiles
 
@@ -717,10 +729,11 @@
 ; main-game-loop : void -> void
 ;  Runs the main loop of the game. Runs infinitely.
 (define (main-game-loop)
-  (let loop ([b (generate-board 6)])
+  (let loop ([b (generate-board 2)])
     (if (not (end-game? b))
         (loop (move b))
-        (printf "End of game\n"))))
+        ;(printf "End of game!\n ~a" (display-board (replace-bears b))))))
+        (printf "End of game!\n ~a" (display-board b)))))
 
 ; Runs the main loop
 (main-game-loop)
