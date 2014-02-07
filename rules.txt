@@ -37,7 +37,7 @@ X 9. replace module+ test by module test+ <name>
 X 0. end main-loop when board is full
 
 Questions
-1. Are chest, large-chest they part of extended or basic?
+1. Are chest, large-chest they part of extended or basic? They are not marked extended on TTP
 2. Same with rock?
 
 
