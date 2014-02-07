@@ -36,3 +36,8 @@ X 7. fix floating-castle for 4 instead of 3.
 X 9. replace module+ test by module test+ <name>
 X 0. end main-loop when board is full
 
+Questions
+1. Are chest, large-chest they part of extended or basic?
+2. Same with rock?
+
+
