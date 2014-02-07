@@ -32,7 +32,7 @@
     [(symbol=? cur-tile 'mountain) 'large-chest]
     [else (error (format "not a tile: ~s~n" cur-tile))]))
 
-(module+ test-next-tile 
+(module+ test 
   (check-equal? (next-tile 'grass) 'bush)
   (check-equal? (next-tile 'bush)  'tree)
   (check-equal? (next-tile 'tree)  'hut)
@@ -63,7 +63,7 @@
 ;  Returns if value v is true
 (define (true? v) (not (false? v)))
 
-(module+ test-true? 
+(module+ test 
   (check-equal? (true? #t) #t)
   (check-equal? (true? #f) #f))
 
@@ -173,7 +173,7 @@
 (define (get-tile b x y)
   (list-ref (list-ref b y) x))
 
-(module+ test-get-tile
+(module+ test
   ;(check-equal? (get-tile empty 0 0) #f)
   (check-equal? (get-tile (list (list (tile 'blank 0 0) (tile 'grass 1 0))
                                 (list (tile 'grass 0 1) (tile 'blank 1 1))) 
@@ -191,7 +191,7 @@
        (and (< y size) (> y -1))
        (not (and (equal? x 0) (equal? y 0)))))
 
-(module+ test-on-board?
+(module+ test
   (check-equal? (on-board? 1 0 0) #f)
   (check-equal? (on-board? 0 0 (length b2)) #f)
   (check-equal? (on-board? 1 0 (length t1)) #t)
@@ -209,7 +209,7 @@
          (and (symbol=? (tile-v t) v)
               (not (member t l))))))
 
-(module+ test-valid-neighbour?
+(module+ test
   (check-equal? (valid-neighbour? empty  1  2 'test empty) #f)
   (check-equal? (valid-neighbour? t2 0 2 'grass empty) #t)
   (check-equal? (valid-neighbour? t2 0 2 'grass (list (tile 'grass 0 2))) #f))
@@ -228,7 +228,7 @@
                    (cons (first r)
                          (replace-row (rest r) (- x 1) v)))]))
 
-(module+ test-replace-row 
+(module+ test 
   (check-equal? (replace-row (list (tile 'hut 0 0)) 2 'reddit)   
                 (list (tile 'hut 0 0)))
   (check-equal? (replace-row (list (tile 'hut 0 0)) 0 'reddit)   
@@ -252,7 +252,7 @@
                          (rest b))
                    (cons (first b) (replace (rest b) x (- y 1) v)))]))
 
-(module+ test-replace
+(module+ test
   (check-equal? (replace t1 0 1 'reddit)
                 (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
                       (list (tile 'reddit 0 1) (tile 'grass 1 1))))
@@ -275,7 +275,7 @@
         (list (car l4) (+ 1 (cadr l1) (cadr l2) (cadr l3) (cadr l4))))
       (list l 0)))
 
-(module+ test-count-neighbours
+(module+ test
   (check-equal? (count-neighbours t1 1 1 'cons empty) (list empty 0))
   (check-equal? (count-neighbours 
                  t1 1 1 'grass (list (tile 'grass 1 1))) 
@@ -300,7 +300,7 @@
         l4)
       (list b l)))
 
-(module+ test-replace-neighbours
+(module+ test
   (check-equal? (replace-neighbours t1 1 1 'cons empty) (list t1 empty))
   (check-equal? (replace-neighbours 
                  t1 1 1 'grass (list (tile 'grass 1 1))) 
@@ -335,7 +335,7 @@
             (loop b1 v1 c1))
           board))))
 
-(module+ test-collapse-at*
+(module+ test
   (check-equal? (collapse-at* (list (list (tile 'blank 0 0) (tile 'grass 1 0)) 
                                     (list (tile 'blank 0 1) (tile 'grass 1 1)))
                               0 1 'grass)
@@ -390,7 +390,7 @@
        (symbol=? (tile-v (get-tile b x y))
                  v)))
 
-(module+ test-tile-val?
+(module+ test
   (check-equal? (tile-val? t1 1 1 'grass) #t)
   (check-equal? (tile-val? t1 1 1 'hut) #f))
 
@@ -408,7 +408,7 @@
 (define-syntax-rule (values->list a)
   (call-with-values (λ () a) list))
 
-(module+ test-swap-store-house
+(module+ test
   (check-equal? (values->list (swap-store-house t1 'bear))
                 (list (list (list (tile 'bear 0 0) (tile 'blank 1 0)) 
                             (list (tile 'blank 0 1) (tile 'grass 1 1)))
@@ -427,7 +427,7 @@
         (replace b x y 'rock)
         (collapse-at* b x y v))))
 
-(module+ test-crystal-collapse
+(module+ test
   (check-equal? (crystal-collapse b1 2 1) 
                 (list
                  (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
@@ -507,7 +507,7 @@
             (values (replace b x y 'blank) #f)
             (values b v))])]))
 
-(module+ test-decide-move
+(module+ test
   (check-equal? 
    (values->list (decide-move b1 0 0 'bear))
    (list (list
@@ -634,8 +634,8 @@
     (for/list ([j (range n)])
       list (tile 'blank i j))))
 
-(module+ test-generate-board
-  (check-equal? (generate-board 0) 'emtpy)
+(module+ test
+  (check-equal? (generate-board 0) '())
   (check-equal? (generate-board 2)
                 (list (list (tile 'blank 0 0) (tile 'blank 0 1)) 
                       (list (tile 'blank 1 0) (tile 'blank 1 1)))))
@@ -645,7 +645,7 @@
 
 (define (end-game-row? r)
   (cond
-    [(empty? r) empty]
+    [(empty? r) #t]
     [(cons? r)
      (let* ([x (tile-x (first r))]
             [y (tile-y (first r))]
@@ -658,7 +658,7 @@
                (and #t (end-game-row? (rest r))))))]))
 
 
-(module+ test-end-game-row? 
+(module+ test 
   (check-equal? (end-game-row? (list (tile 'blank 0 0) (tile 'blank 0 1)))
                 #f)
   (check-equal? (end-game-row? (list (tile 'blank 0 0) (tile 'grass 0 1)))
@@ -673,12 +673,12 @@
 
 (define (end-game? b)
   (cond
-    [(empty? b) empty]
+    [(empty? b) #t]
     [(cons? b)
      (and (end-game-row? (first b))
           (end-game? (rest b)))]))
 
-(module+ test-end-game? 
+(module+ test 
   (check-equal? (end-game? (list (list (tile 'blank 0 0) (tile 'blank 0 1)) 
                                  (list (tile 'blank 1 0) (tile 'blank 1 1))))
                 #f)
