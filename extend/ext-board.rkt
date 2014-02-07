@@ -508,13 +508,6 @@
             (values b v))])]))
 
 (module+ test
-  (check-equal? 
-   (values->list (decide-move b1 0 0 'bear))
-   (list (list
-          (list (tile 'bear 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
-          (list (tile 'grass 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
-          (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2)))
-         'bear))
   
   (check-equal? 
    (values->list (decide-move t1 0 0 'tree))
@@ -726,14 +719,13 @@
      (printf "\n")
      (display-board (rest board))]))
 
-; main-game-loop : void -> void
+; main-game-loop : num -> void
 ;  Runs the main loop of the game. Runs infinitely.
-(define (main-game-loop)
-  (let loop ([b (generate-board 2)])
+(define (main-game-loop n)
+  (let loop ([b (generate-board n)])
     (if (not (end-game? b))
         (loop (move b))
-        ;(printf "End of game!\n ~a" (display-board (replace-bears b))))))
         (printf "End of game!\n ~a" (display-board b)))))
 
-; Runs the main loop
-(main-game-loop)
+; Runs the main loop 
+(main-game-loop 6)
