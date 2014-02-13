@@ -55,7 +55,7 @@
                     'imperial-robot))
 
 ; A list of all possible tiles that can be collapsed by a crystal
-(define crystal-list '(floating-castle chest castle mansion cathedral 
+(define crystal-list '(floating-castle castle mansion cathedral 
                                        house church hut tombstone tree bush grass))
 
 (define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
@@ -440,7 +440,6 @@
 ;   - store-house
 ;   - imperial-robot
 ;   - crystal
-;   - select chest or large-chest 
 ;   - others
 ;  and take corresponding action
 
@@ -467,9 +466,6 @@
           [(symbol=? v 'crystal)
            (values (crystal-collapse b x y) #f)]
           [else (values (collapse-at* b x y v) #f)])]
-       ; chest or large-chest
-;       [(chest large-chest) 
-;        (values (replace b x y 'blank) v)]
        ; everything else
        [else 
         (if (symbol=? v 'imperial-robot)
@@ -517,21 +513,21 @@
   (check-equal?
    (values->list 
     (decide-move (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-                       (list (tile 'large-chest 0 1) (tile 'grass 1 1)))
+                       (list (tile 'hut 0 1) (tile 'grass 1 1)))
                  0 1 'crystal))
    (list
     (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-          (list (tile 'large-chest 0 1) (tile 'grass 1 1)))
+          (list (tile 'hut 0 1) (tile 'grass 1 1)))
     'crystal))
   
   (check-equal?
    (values->list 
     (decide-move (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-                       (list (tile 'chest 0 1) (tile 'grass 1 1)))
+                       (list (tile 'castle 0 1) (tile 'grass 1 1)))
                  0 1 'crystal))
    (list
     (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-          (list (tile 'chest 0 1) (tile 'grass 1 1)))
+          (list (tile 'castle 0 1) (tile 'grass 1 1)))
     'crystal))
   
   (check-equal?
@@ -674,13 +670,13 @@
      (printf "\n")
      (display-board (rest board))]))
 
-; main-game-loop : void -> void
+; main-game-loop : num -> void
 ;  Runs the main loop of the game. Runs infinitely.
-(define (main-game-loop)
-  (let loop ([b (generate-board 2)])
+(define (main-game-loop n)
+  (let loop ([b (generate-board n)])
     (if (not (end-game? b))
         (loop (move b))
         (printf "End of game!\n ~a" (display-board b)))))
 
 ; Runs the main loop
-;(main-game-loop)
+(main-game-loop 6)
