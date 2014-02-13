@@ -1,12 +1,7 @@
 #lang racket
-;#lang web-server/insta
 (require web-server/servlet
          web-server/servlet-env
          xml)
-         ;net/http-client)
-;xml/plist
-;web-server-lib)
-
 
 (define (variant-server req)
   ;(print-req req)
@@ -17,7 +12,7 @@
      [(equal? (request-method req) #"GET")
       `(variant ((value "basic")))]
 
-     [(equal? (request-method req) #"POST")
+     [else
       `(variant ((value "error")))])))
 
 (serve/servlet variant-server #:port 8080
