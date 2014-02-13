@@ -40,4 +40,30 @@ Questions
 1. Are chest, large-chest they part of extended or basic? They are not marked extended on TTP
 2. Same with rock?
 
+2/10
+
+tcp-listen port-no num bool
+tcp-accept listner
+handle in out
+    (regexp-match #rx"^
+
+
+X expression
+
+(( a b)) is a=b
+(xyz ...) is xyz = font
+
+(match (+ 1 2)
+['(n) "match char n"]
+[`(,n) "match anything ie n]
+
+[else "nothing"])
+
+2/12
+
+When summing a large list, do you worry to make it tail recursive and make it use constant space? 
+NO. because the list anyway is of the order n. So if your computation takes order n then its only going to be 2n.
+
+look up - trapolining
+
 
