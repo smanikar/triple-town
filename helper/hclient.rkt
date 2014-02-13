@@ -1,20 +1,27 @@
 #lang racket
-;(require net/http-client)
+
 (require web-server/servlet
          web-server/servlet-env
-         xml)
-(require net/http-client)
+         xml
+         net/http-client
+         rackunit
+         test-engine/racket-tests)
 
-(define (client)
+(define (variant-client-get)
   (define hc (http-conn-open "127.0.0.1" #:port 8080))
-  (http-conn-sendrecv! hc "/variant"
+  (define-values (_ __ port) (http-conn-sendrecv! hc "/variant"
                        #:method #"GET"))
-  ;(http-conn-close! hc))
-      ; (make-url)
-  ;(printf "~a" url))
-;                                                 #"1.1"
-;                                                 #"GET"
-;                                                 'emtpy
-;                                                 #f
-;                                                 '(gzip)
-;                                                 #f))
+  (port->string port))
+
+(define (variant-client-post)
+  (define hc (http-conn-open "127.0.0.1" #:port 8080))
+  (define-values (_ __ port) (http-conn-sendrecv! hc "/variant"
+                       #:method #"POST"))
+  (port->string port))
+
+(module+ test
+  (check-equal? (variant-client-get) 
+                "<variant value=\"basic\"></variant>")
+  (check-equal? (variant-client-post) 
+                "<variant value=\"error\"></variant>"))
+                
