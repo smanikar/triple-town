@@ -193,6 +193,22 @@
 
 ;; --------------------------------------------------------------------
 
+(define move-res-1
+  `(place (row ((value "2")))
+          (column ((value "4")))))
+
+(define move-res-2
+  `(store))
+
+(define move-res-3
+  `(collect (row ((value "3")))
+            (column ((value "5")))))
+
+(define (play-move b v)
+  move-res-1)
+
+;; --------------------------------------------------------------------
+
 (define (variant-server req)
   (response/xexpr
    (cond
@@ -206,21 +222,13 @@
          (define l (build-board e:str))
          (define b (populate-board (first l) (length (first l))))
          (printf "\ncurr ~a\n" (rest l))
-         (display-board b)
-         (printf "\n**********\n")
-         `(move ((value "valid")))])]
+         (display-board b)      
+         (printf "**********\n")
+         (play-move b (rest l))
+         ;`(move ((value "valid")))
+         ])]
       [else `(move ((value "error-not-method-post")))])))
 
 (serve/servlet variant-server #:port 8080
               #:servlet-path "/move")
 
-(define move-res-1
-  `(place (row ((value "2")))
-          (column ((value "4")))))
-
-(define move-res-2
-  `(store))
-
-(define move-res-3
-  `(collect (row ((value "3")))
-            (column ((value "5")))))
