@@ -165,7 +165,7 @@
 (define (valid-sto? v)
   (match v
     [`(tile ((value ,f)))
-     (define vlist (list "blank" "grass" "bush" "tree" "hut"
+     (define vlist (list "none" "grass" "bush" "tree" "hut"
                          "crystal" "imperial-bot"))
      (and (member f vlist) #t)]
     [else #f]))
