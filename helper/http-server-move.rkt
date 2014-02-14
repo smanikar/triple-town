@@ -227,63 +227,6 @@
 (serve/servlet variant-server #:port 8080
               #:servlet-path "/move")
 
-(define move-req 
-  '(game 
-    (board 
-     (row (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "hut"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank")))))
-     (row (cell (tile ((value "tree"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank")))))
-     (row (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "mansion"))))
-          (cell (tile ((value "blank")))))
-     (row (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "house"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank")))))
-     (row (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "grass"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank")))))
-     (row (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "blank"))))
-          (cell (tile ((value "tree"))))
-          (cell (tile ((value "blank"))))))
-    (current (tile ((value "crystal"))))
-    (storehouse (tile ((value "grass"))))))
-
-(define (main)
-  (define e:str (xexpr->string move-req))
-  (cond 
-    [(false? (valid-xml? e:str)) 
-     (printf "\nERROR\n")]
-    [else 
-     (define l (build-board e:str))
-     (define b (populate-board (first l) (length (first l))))
-     (format "\ncurr ~a\n" (rest l))
-     ;(return-move b (rest l))
-     b]))
-
-;(time (main))
-
-;(valid-xml? (xexpr->string move-req))
-
 (define move-res-1
   `(place (row ((value "2")))
           (column ((value "4")))))
@@ -294,5 +237,3 @@
 (define move-res-3
   `(collect (row ((value "3")))
             (column ((value "5")))))
-
-;(correct-xexpr? move-req (λ(x) (validate-xexpr x)) 'empty)
