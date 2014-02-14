@@ -2,8 +2,9 @@
 ; U0706564
 
 #lang racket
-(require rackunit)
-(require test-engine/racket-tests)
+(module+ test (require rackunit))
+
+(provide (all-defined-out))
 
 ;next-tile : symbol -> symbol
 ; Gets the next tile of cur-tile
@@ -679,4 +680,4 @@
         (printf "End of game!\n ~a" (display-board b)))))
 
 ; Runs the main loop
-(main-game-loop 6)
+;(main-game-loop 6)
