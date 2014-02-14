@@ -162,9 +162,17 @@
      (and (member f vlist) #t)]
     [else #f]))
 
+(define (valid-sto? v)
+  (match v
+    [`(tile ((value ,f)))
+     (define vlist (list "blank" "grass" "bush" "tree" "hut"
+                         "crystal" "imperial-bot"))
+     (and (member f vlist) #t)]
+    [else #f]))
+
 (define (valid-store? s)
   (match s
-    [`(storehouse() ,t) (valid-inp? t)]
+    [`(storehouse() ,t) (valid-sto? t)]
     [else #f]))
 
 (define (valid-cell? c)
