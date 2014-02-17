@@ -8,6 +8,37 @@
 
 (require "basic.rkt")
 
+(define b9 
+  (list
+   (list (tile 'blank 0 0) (tile 'tree 1 0) (tile 'house 2 0) 
+         (tile 'house 3 0) (tile 'blank 4 0) (tile 'blank 5 0))
+   (list (tile 'castle 0 1) (tile 'castle 1 1) (tile 'blank 2 1) 
+         (tile 'mansion 3 1) (tile 'blank 4 1) (tile 'blank 5 1))
+   (list (tile 'bush 0 2) (tile 'floating-castle 1 2) (tile 'floating-castle 2 2) 
+         (tile 'mansion 3 2) (tile 'blank 4 2) (tile 'blank 5 2))
+   (list (tile 'bush 0 3) (tile 'castle 1 3) (tile 'tree 2 3) 
+         (tile 'tree 3 3) (tile 'blank 4 4) (tile 'blank 5 4))
+   (list (tile 'blank 0 4) (tile 'blank 1 4) (tile 'blank 2 4)
+         (tile 'blank 3 4) (tile 'blank 4 4) (tile 'blank 5 4))
+   (list (tile 'blank 0 4) (tile 'blank 1 4) (tile 'blank 2 4)
+         (tile 'blank 3 4) (tile 'blank 4 4) (tile 'blank 5 4))))
+
+(define b10 
+  (list
+   (list (tile 'blank 0 0) (tile 'tree 1 0) (tile 'house 2 0) 
+         (tile 'tree 3 0) (tile 'house 4 0) (tile 'tree 5 0))
+   (list (tile 'tree 0 1) (tile 'house 1 1) (tile 'tree 2 1) 
+         (tile 'house 3 1) (tile 'tree 4 1) (tile 'house 5 1))
+   (list (tile 'house 0 2) (tile 'tree 1 2) (tile 'house 2 2) 
+         (tile 'tree 3 2) (tile 'house 4 2) (tile 'tree 5 2))
+   (list (tile 'tree 0 3) (tile 'house 1 3) (tile 'tree 2 3) 
+         (tile 'house 3 3) (tile 'tree 4 4) (tile 'house 5 4))
+   (list (tile 'house 0 4) (tile 'tree 1 4) (tile 'house 2 4)
+         (tile 'tree 3 4) (tile 'house 4 4) (tile 'tree 5 4))
+   (list (tile 'tree 0 4) (tile 'house 1 4) (tile 'tree 2 4)
+         (tile 'house 3 4) (tile 'tree 4 4) (tile 'house 5 4))))
+
+
 (module+ test
   (require rackunit))
 
@@ -111,7 +142,7 @@
           (match b
             [`(board () ,r0 ,r1 ,r2 ,r3 ,r4 ,r5)
              (define board 
-               (list (build-row0 r0 v)
+               (list (build-row0 r0 (if (string=? v "none") "blank" v))
                      (build-row r1)
                      (build-row r2)
                      (build-row r3)
@@ -170,6 +201,12 @@
       ;(build-board b c s)]
       [else #f])))
 
+(module+ test
+  (check-equal? (valid-xml? (bcs->xml b9 "grass" "none"))
+                #t)
+  (check-equal? (valid-xml? (bcs->xml b1 "grass" "none"))
+                #f))
+
 ;; valid-board? string -> boolean
 ;; is b a valid board (1 row0 and 5 rows)
 
@@ -184,6 +221,13 @@
           (valid-row? r5))]
     [else  #f]))
 
+(module+ test
+  (define in1 "<board><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"mansion\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"house\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"grass\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"bush\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row></board>")
+  (define in2 "<board><row><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row></board>")
+  (check-equal? (valid-board? (xml->xexpr (read-xml/element (open-input-string in1)))) #t)
+  (check-equal? (valid-board? (xml->xexpr (read-xml/element (open-input-string in2)))) #f)
+  )
+
 ;; valid-row0? : string -> boolean
 ;; is r a valid row0 ( 5 cells)
 
@@ -196,6 +240,12 @@
           (valid-cell? l3)
           (valid-cell? l4))]
     [else #f]))
+
+(module+ test
+  (define in3 "<row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row>")
+  (define in4 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
+  (check-equal? (valid-row0? (xml->xexpr (read-xml/element (open-input-string in3)))) #t)
+  (check-equal? (valid-row0? (xml->xexpr (read-xml/element (open-input-string in4)))) #f))
 
 ;; valid-row? : string -> boolean
 ;; is r a valid row (6 cells)
@@ -211,6 +261,12 @@
           (valid-cell? l5))]
     [else #f]))
 
+(module+ test
+  (define in5 "<row><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row>")
+  (define in6 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
+  (check-equal? (valid-row? (xml->xexpr (read-xml/element (open-input-string in5)))) #t)
+  (check-equal? (valid-row? (xml->xexpr (read-xml/element (open-input-string in6)))) #f))
+
 ;; valid-current? : string -> boolean
 ;; is c a valid current tile (1 input tile)
 
@@ -219,6 +275,18 @@
     [`(current() ,t) (valid-input-tile? t)]
     [else #f]))
 
+(module+ test
+  (define in7 "<current><tile value =\"crystal\"></tile></current>")
+  (define in8 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
+  (define in9 "<current><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></current>")
+  (define in10 "<current><cell><tile value =\"blank\"></tile></cell></current>")
+  (define in11 "<current value =\"blank\"></current>")
+  (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in7)))) #t)
+  (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in8)))) #f)
+  (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in9)))) #f)
+  (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in10)))) #f)
+  (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in11)))) #f))
+
 ;; valid-store? string -> boolean
 ;; is s a valid storehouse tile?
 
@@ -226,6 +294,18 @@
   (match s
     [`(storehouse() ,t) (valid-store-tile? t)]
     [else #f]))
+
+(module+ test
+  (define in12 "<storehouse><tile value =\"crystal\"></tile></storehouse>")
+  (define in13 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
+  (define in14 "<storehouse><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></storehouse>")
+  (define in15 "<storehouse><cell><tile value =\"blank\"></tile></cell></storehouse>")
+  (define in16 "<storehouse value =\"blank\"></storehouse>")
+  (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in12)))) #t)
+  (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in13)))) #f)
+  (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in14)))) #f)
+  (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in15)))) #f)
+  (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in16)))) #f))
 
 ;; valid-cell? string -> boolean
 ;; is c a valid cell?
@@ -242,7 +322,7 @@
   (match v
     [`(tile ((value ,f)))
      (define vlist (list "grass" "bush" "tree" "hut"
-                         "crystal" "imperial-bot"))
+                         "crystal" "imperial-robot"))
      (and (member f vlist) #t)]
     [else #f]))
 
@@ -252,7 +332,7 @@
 (define (valid-store-tile? v)
   (match v
     [`(tile ((value ,f)))
-     (define vlist (list "blank" "grass" "bush" "tree" "hut"
+     (define vlist (list "none" "grass" "bush" "tree" "hut"
                          "crystal" "imperial-bot"))
      (and (member f vlist) #t)]
     [else #f]))
@@ -270,21 +350,281 @@
     [else #f]))
 
 ;; --------------------------------------------------------------------
+;; collapse-points : symbol num -> num
+;;  a table of points obtained when 'n' of 'v' tiles are collapsed
 
-(define move-res-1
-  `(place (row ((value "2")))
-          (column ((value "4")))))
+(define (collapse-points v n)
+  (cond
+    [(>= n 3) 
+     (case v
+       ['grass 5]
+       ['bush 20]
+       ['tree 100]
+       ['hut 500]
+       ['house 2000]
+       ['mansion 5000]
+       ['castle 20000]
+       ['floating-castle 100000]
+       ['triple-castle 1000000]
+       [else 0])]
+    [(equal? n 1) 
+     (case v
+       ['grass 5]
+       ['bush 20]
+       ['tree 100]
+       ['hut 500]
+       ['house 2000]
+       ['mansion 5000]
+       ['castle 20000]
+       ['floating-castle 100000]
+       ['triple-castle 1000000]
+       [else 0])]
+    [else 0]))
 
-(define move-res-2
-  `(store))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Basic
+;3 Grass	                        Bush        20
+;3 Bushes	                        Tree       100
+;3 Trees	                        Hut        500
+;3 Huts	                        House     2000
+;3 Houses                          Mansion   5000
+;3 Mansions                        Castle   20000
+;3 Castles                         FCastl  100000
+;4 FCastles                        TCas   1000000
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define move-res-3
-  `(collect (row ((value "3")))
-            (column ((value "5")))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Place Input
+;1 Grass                            Grass       5
+;1 Bush	                         Bush	    20
+;1 Tree                             Tree      100
+;1 Hut	                         Hut       500
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (play-move b v)
-  move-res-1)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Crystal
+;2 Grass, 1 Crystal                 Bush       20
+;2 Bushes, 1 Crystal                Tree      100
+;2 Trees, 1 Crystal                 Hut       500
+;2 Huts,  1 Crystal                 House    2000
+;2 Houses, 1 Crystal                Mansion  5000
+;2 Mansions, 1 Crystal              Castle  20000
+;2 Castles, 1 Crystal               FCastl 100000
+;3 FCastles, 1 Crystal              TCas  1000000
+;1 Crystal                          Blank       0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Imperial Bot
+;1 bot, 1 grass                     Blank      -5
+;1 bot, 1 bush                      Blank     -20
+;1 bot, 1 tree                      blank    -100
+;1 bot, 1 hut                       Blank    -500
+;1 bot, 1 house                     Blank   -2000
+;1 bot, 1 Mansions                  Blank   -5000
+;1 bot, 1 Castles                   Blank  -20000
+;1 bot, 1 FCastles                  Blank -100000
+;1 bot, 1 Triple-Castle             Blank-1000000 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Storehouse
+;Storehouse swap                                0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Advanced - TBD
+;4 Grass	                         Bush*      40
+;5 Grass	                         Bush*	    45
+;3 Grass, 2 Bushes	                 Tree	   125
+;5 Grass, 2 Bushes	                 Tree      145
+;2 Bushes,1 Bush*	                 Tree      120
+;3 Grass, 2 Bushes*	         Tree	   225
+;2 Bushes, 2 Trees	                 Hut       620
+;3 Grass, 1 Bush*, 1 Bush, 2 Trees  Hut	   625
+;4 Trees                            Hut*     1100
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+; points-at* : board num num sybmol -> num
+;  Collapse board multiple times until no more collapses are possible, 
+;  and returns points earned
+
+(define (points-at* b x y v p)
+  (let-values ([(bb pp) (replace-points b x y v p 1)])
+    (let loop ([board bb]
+               [point pp]
+               [value v]
+               [count (cadr (count-neighbours bb x y v empty))])
+      (if (or (and (symbol=? value 'floating-castle) (> count 3))
+              (and (not (symbol=? value 'floating-castle)) (> count 2)))
+          (let*-values 
+              ([(b1 p1) (replace-points (car (replace-neighbours board x y value empty))
+                                        x y (next-tile value) point count)]
+               [(c1) (cadr (count-neighbours b1 x y (next-tile value) empty))]
+               [(v1) (next-tile value)])
+            (loop b1 p1 v1 c1))
+          point))))
+
+;; replace-points : board num num val num -> num
+;;  Replaces items and returns score from replacement
+
+(define (replace-points b x y v p n)
+  (values (replace b x y v) (+ p (collapse-points v n))))
+
+; swap-store-house : board symbol -> (values board symbol)
+;  Swaps the store house with tile with 'v'
+
+;; As of now, storehouse is not used as a strategy. It is only used as
+;; a last option to store good tiles for later use. So the there is no
+;; score change. And, the state of the board should not be stored by
+;; the player. So returning just p.
+
+(define (swap-store-house-points b v p) p)
+;  (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
+;      (values (replace b 0 0 v) (gen-input) p)
+;      (values (replace b 0 0 v) (tile-v (get-tile b 0 0)) p)))
+
+; collapse-crystal : board num num -> num
+;  Places crystal at ('x','y') and s 'b'
+
+(define (crystal-collapse-points b x y p)
+  (let ([v (for/first ([i crystal-list]
+                       #:when (> (cadr (count-neighbours 
+                                        (replace b x y i) x y i empty))
+                                 2)) i)])
+    (if (false? v)
+        ;(values b p)
+        p
+        (points-at* b x y v p))))
+
+; decide-move : board num num symbol num -> num
+;  Decide whether move is 
+;   - store-house
+;   - imperial-robot
+;   - crystal
+;   - others
+;  and take corresponding action
+
+(define (decide-move-points b x y v p n)
+  (cond
+    [(and (equal? x 0) (equal? y 0))
+     (swap-store-house-points b v p)]
+    
+    [else
+     (case (tile-v (get-tile b x y))
+       [(blank) ; (x,y) is blank
+        (cond
+          ; imperial-robot
+          [(symbol=? v 'imperial-robot)
+           p]
+          ; crystal
+          [(symbol=? v 'crystal)
+           (crystal-collapse-points b x y p)]
+          [else 
+           (points-at* b x y v p)])]
+       ; everything else
+       [else 
+        (if (symbol=? v 'imperial-robot)
+            (- p (collapse-points (tile-v (get-tile b x y)) 1))
+;            (let ([pp (- p (collapse-points (tile-v (get-tile b x y)) 1))])
+;              (if (> pp 0) pp 0))
+            p)])]))
+
+; A points-tile is (make-tile num num num)
+(define-struct ptile (p x y) #:transparent)
+
+;; generate-points-board : board symbol num -> board
+;;  Plays move 'v' on every tile of 'b', collapses and returns a board
+;;  of points
+
+(define (generate-points-board b v n)
+  (for/list ([i (range n)])
+    list
+    (for/list ([j (range n)])
+      list (ptile (decide-move-points b j i v 0 n) j i))))
+
+;; max-tiles? : ptile ptile -> ptile
+;; Returns tile with higher points
+
+(define (max-tiles? x y)
+  (if (>= (ptile-p x) (ptile-p y))
+      x y))
+
+;; find-max : board (ptile ...) (ptile ptile -> ptile) -> ptile
+;;  Folds board to find the tile with maximum points
+
+(define (find-max b ACCUM-ZERO ACCUM-MAX?)
+  (for/fold ([max-x ACCUM-ZERO])
+    ([x b])
+    (ACCUM-MAX? max-x 
+                (for/fold ([max-y ACCUM-ZERO])
+                  ([y x])
+                  (ACCUM-MAX? max-y y)))))
+
+(define (display-pboard-row row)
+  (cond
+    [(empty? row) empty]
+    [(cons? row)
+     (let ([s (number->string (ptile-p (first row)))])
+       (printf "~a" s)
+       (for ([i (range (- 15 (string-length s)))])
+         (printf "~a" " "))
+       (printf "|")
+       )
+     (display-pboard-row (rest row))]))
+
+;display-board : board -> board
+; Displays a board of tiles
+
+(define (display-pboard board)
+  (cond
+    [(empty? board) empty]
+    [(cons? board)
+     (display-pboard-row (first board))
+     (printf "\n")
+     (display-pboard (rest board))]))
+
+;; genrate-xexpr-response HTTP req -> X-expr
+;;  Generates appropriate X-expr for given input
+
+(define (generate-xexpr-response req)
+  (cond
+    ; if not POST method or POST data is empty
+    [(false? (and (equal? (request-method req) #"POST")
+                  (request-post-data/raw req)))
+     `(move ((value "error-not-method-post")))]
+    ; POST method with valid post data
+    [else
+     (define e:str (bytes->string/utf-8 (request-post-data/raw req)))
+     (cond 
+       ; Not valid XML Tree
+       [(false? (valid-xml? e:str)) 
+        `(move ((value "error-invalid-tree")))]
+       ; Valid XML Tree
+       [else
+        (define l (build-board e:str))
+        (define f (first l))
+        (define n 6)
+        (define b (populate-board f n))
+        (define v (cadr l))
+        (printf "\nNew Request: Current = ~a\n" v)
+        (printf "*********************************\n")
+        (display-board b)
+        (printf "*********************************\n")
+        (define pb (generate-points-board b v n))
+        (display-pboard pb)
+        (define t (find-max pb (ptile 0 0 0) max-tiles?))
+        (define x (ptile-x t))
+        (define y (ptile-y t))
+        (cond
+          [(and (equal? x 0) (equal? y 0)) `(store)]
+          [else
+           `(place (row ((value ,(number->string x))))
+                   (column ((value ,(number->string y)))))])])]))
+
+
+;(find-max (play-move b6 'grass 4) (ptile 0 0 0) max-tiles)
 ;; --------------------------------------------------------------------
 ;; variant-server : http request -> http response
 ;; a server that accepts HTTP requests containing a payload (if any) in XML 
@@ -292,26 +632,46 @@
 ;; There are two kinds of queries to the server - variant and move
 
 (define (variant-server req)
-  (response/xexpr
-   (cond
-     [(and (equal? (request-method req) #"POST")
-           (request-post-data/raw req))
-      (define e:str (bytes->string/utf-8 (request-post-data/raw req)))
-      (cond 
-        [(false? (valid-xml? e:str)) 
-         `(move ((value "error-invalid-tree")))]
-        [else 
-         (define l (build-board e:str))
-         (define b (populate-board (first l) (length (first l))))
-         (printf "\ncurr ~a\n" (rest l))
-         (display-board b)      
-         (printf "**********\n")
-         (play-move b (rest l))
-         ;`(move ((value "valid")))
-         ])]
-     [else `(move ((value "error-not-method-post")))])))
+  (response/xexpr (generate-xexpr-response req)))
+
 
 (serve/servlet variant-server #:port 8080
-              #:servlet-path "/move")
+               #:servlet-path "/move")
 ;(serve/servlet variant-server #:port 8080
 ;              #:servlet-path "/variant")
+
+
+;; Misc. Helper functions
+;(xml->xexpr (read-xml/element (open-input-string ...)))
+(define e2 ;
+  "<game><board><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"floating-castle\"></tile></cell><cell><tile value =\"floating-castle\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row></board><current><tile value =\"crystal\"></tile></current><storehouse><tile value =\"none\"></tile></storehouse></game>")
+
+(define (board->xml/row r)
+  (string-append 
+   (cond
+     [(empty? r) ""]
+     [(and (equal? (tile-x (first r)) 0)
+           (equal? (tile-y (first r)) 0)) 
+      (board->xml/row (rest r))]
+     [else
+      (string-append "<cell><tile value =\"" 
+                     (symbol->string (tile-v (first r))) 
+                     "\"></tile></cell>"
+                     (board->xml/row (rest r)))])))
+
+(define (board->xml b)
+  (string-append
+   (cond
+     [(empty? b) ""]
+     [else
+      (string-append "<row>" (board->xml/row (first b)) "</row>"
+                     (board->xml (rest b)))])))
+
+;; bcs->xml : board string string -> string
+;; converts 'b' 'c' 's' to XML string tree
+
+(define (bcs->xml b c s)
+  (string-append "<game><board>" (board->xml b) 
+                 "</board><current><tile value =\""
+                 c "\"></tile></current><storehouse><tile value =\""
+                 s "\"></tile></storehouse></game>"))
