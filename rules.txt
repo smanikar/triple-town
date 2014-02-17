@@ -66,4 +66,6 @@ NO. because the list anyway is of the order n. So if your computation takes orde
 
 look up - trapolining
 
-
+Analysing points
+---------------
+5325-5925
