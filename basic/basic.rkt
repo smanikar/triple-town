@@ -104,7 +104,7 @@
 (define b6 (list (list (tile 'blank 0 0) (tile 'grass 1 0) 
                        (tile 'bush 2 0) (tile 'blank 3 0))
                  (list (tile 'hut  0 1) (tile 'grass  1 1) 
-                       (tile 'bush 2 1) (tile 'rock  3 1))
+                       (tile 'bush 2 1) (tile 'bush  3 1))
                  (list (tile 'hut  0 2) (tile 'blank  1 2) 
                        (tile 'bush 2 2) (tile 'mansion 3 2))
                  (list (tile 'tree  0 3) (tile 'tree  1 3) 
@@ -394,12 +394,11 @@
 
 (define (crystal-collapse b x y)
   (let ([v (for/first ([i crystal-list]
-                       #:when (> 
-                               (cadr (count-neighbours (replace b x y i) x y i empty)) 
-                               2))
-             i)])
+                       #:when (> (cadr (count-neighbours 
+                                        (replace b x y i) x y i empty)) 
+                                 2)) i)])
     (if (false? v)
-        (replace b x y 'rock)
+        b
         (collapse-at* b x y v))))
 
 (module+ test
@@ -410,7 +409,7 @@
                  (list (tile 'blank 0 2) (tile 'blank 1 2) (tile 'blank 2 2))))
   (check-equal? (crystal-collapse b1 2 0)
                 (list
-                 (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'rock 2 0))
+                 (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
                  (list (tile 'grass 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
                  (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2))))
   (check-equal? (crystal-collapse b7 2 1)
@@ -506,7 +505,7 @@
    (values->list (decide-move b1 2 0 'crystal))
    (list
     (list
-     (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'rock 2 0))
+     (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
      (list (tile 'grass 0 1) (tile 'hut 1 1) (tile 'blank 2 1))
      (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2)))
     #f))
@@ -544,7 +543,7 @@
   (check-equal?
    (values->list 
     (decide-move (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
-                       (list (tile 'rock 0 1) (tile 'grass 1 1)))
+                       (list (tile 'tree 0 1) (tile 'grass 1 1)))
                  0 1 'imperial-robot))
    (list
     (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
