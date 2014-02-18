@@ -2,7 +2,8 @@
 ; U0706564
 
 #lang racket
-(module+ test (require rackunit))
+(module+ test 
+  (require rackunit))
 
 (require "basic-moves-definitions.rkt")
 
