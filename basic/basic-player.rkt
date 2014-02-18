@@ -38,7 +38,21 @@
    (list (tile 'tree 0 4) (tile 'house 1 4) (tile 'tree 2 4)
          (tile 'house 3 4) (tile 'tree 4 4) (tile 'house 5 4))))
 
-
+(define b11
+  (list
+   (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'bush 2 0) 
+         (tile 'blank 3 0) (tile 'blank 4 0) (tile 'blank 5 0))
+   (list (tile 'hut 0 1) (tile 'grass 1 1) (tile 'bush 2 1) 
+         (tile 'bush 3 1) (tile 'blank 4 1) (tile 'blank 5 1))
+   (list (tile 'hut 0 2) (tile 'blank 1 2) (tile 'bush 2 2) 
+         (tile 'mansion 3 2) (tile 'blank 4 2) (tile 'blank 5 2))
+   (list (tile 'tree 0 3) (tile 'tree 1 3) (tile 'bush 2 3) 
+         (tile 'mansion 3 3) (tile 'blank 4 4) (tile 'blank 5 4))
+   (list (tile 'blank 0 4) (tile 'blank 1 4) (tile 'blank 2 4)
+         (tile 'blank 3 4) (tile 'blank 4 4) (tile 'blank 5 4))
+   (list (tile 'blank 0 4) (tile 'blank 1 4) (tile 'blank 2 4)
+         (tile 'blank 3 4) (tile 'blank 4 4) (tile 'blank 5 4))))
+   
 (module+ test
   (require rackunit))
 
@@ -333,7 +347,7 @@
   (match v
     [`(tile ((value ,f)))
      (define vlist (list "none" "grass" "bush" "tree" "hut"
-                         "crystal" "imperial-bot"))
+                         "crystal" "imperial-robot"))
      (and (member f vlist) #t)]
     [else #f]))
 
@@ -562,24 +576,26 @@
                   ([y x])
                   (ACCUM-MAX? max-y y)))))
 
+;display-pboard-row : row -> #:void
+; Displays a board of tiles
+
 (define (display-pboard-row row)
   (cond
-    [(empty? row) empty]
+    [(empty? row) (display "")]
     [(cons? row)
      (let ([s (number->string (ptile-p (first row)))])
        (printf "~a" s)
        (for ([i (range (- 15 (string-length s)))])
          (printf "~a" " "))
-       (printf "|")
-       )
+       (printf "|"))
      (display-pboard-row (rest row))]))
 
-;display-board : board -> board
+;display-pboard : board -> #:void
 ; Displays a board of tiles
 
 (define (display-pboard board)
   (cond
-    [(empty? board) empty]
+    [(empty? board) (display "")]
     [(cons? board)
      (display-pboard-row (first board))
      (printf "\n")
