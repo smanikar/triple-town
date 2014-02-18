@@ -4,6 +4,8 @@
 #lang racket
 (module+ test (require rackunit))
 
+(require "basic-moves-definitions.rkt")
+
 (provide (all-defined-out))
 
 ;next-tile : symbol -> symbol
@@ -30,14 +32,6 @@
   (check-equal? (next-tile 'castle) 'floating-castle)
   (check-equal? (next-tile 'floating-castle) 'triple-castle))
 
-; A tile is (make-tile symbol num num)
-(define-struct tile (v x y) #:transparent)
-
-; A board is a non-empty list
-
-; Alias for false?
-(define not false?)
-
 ; true? boolean -> boolean
 ;  Returns if value v is true
 (define (true? v) (not (false? v)))
@@ -45,88 +39,6 @@
 (module+ test 
   (check-equal? (true? #t) #t)
   (check-equal? (true? #f) #f))
-
-;A list of all possible inputs
-(define input-list (list 
-                    'grass 
-                    'bush 
-                    'tree 
-                    'hut 
-                    'crystal 
-                    'imperial-robot))
-
-; A list of all possible tiles that can be collapsed by a crystal
-(define crystal-list '(floating-castle castle mansion cathedral 
-                                       house church hut tombstone tree bush grass))
-
-(define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
-                 (list (tile 'blank 0 1) (tile 'grass 1 1))))
-
-(define t2 (list (list (tile 'grass 0 0) (tile 'blank 1 0) (tile 'grass 2 0))
-                 (list (tile 'blank 0 1) (tile 'blank 1 1) (tile 'blank 2 1))
-                 (list (tile 'grass 0 2) (tile 'blank 1 2) (tile 'grass 2 2))))
-
-(define b1 (list (list (tile 'blank 0 0) (tile 'grass 1 0) (tile 'blank 2 0))
-                 (list (tile 'grass 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
-                 (list (tile 'grass 0 2) (tile 'grass 1 2) (tile 'grass 2 2))))
-
-(define b2 (list (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0))
-                 (list (tile 'blank 0 1) (tile 'hut   1 1) (tile 'blank 2 1))
-                 (list (tile 'blank 0 2) (tile 'bush  1 2) (tile 'blank 2 2))))
-
-(define b3 (list (list (tile 'blank 0 0) (tile 'grass 1 0) 
-                       (tile 'grass 2 0) (tile 'blank 3 0))
-                 (list (tile 'bush  0 1) (tile 'grass 1 1) 
-                       (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'bush  0 2) (tile 'grass 1 2) 
-                       (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'grass 0 3) (tile 'blank 1 3) 
-                       (tile 'grass 2 3) (tile 'blank 3 3))))
-
-(define b4 (list (list (tile 'blank 0 0) (tile 'blank 1 0) 
-                       (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'tree  0 1) (tile 'bush  1 1) 
-                       (tile 'grass 2 1) (tile 'blank 3 1))
-                 (list (tile 'bush  0 2) (tile 'bush  1 2) 
-                       (tile 'blank 2 2) (tile 'blank 3 2))
-                 (list (tile 'tree  0 3) (tile 'blank 1 3) 
-                       (tile 'grass 2 3) (tile 'blank 3 3))))
-
-(define b5 (list (list (tile 'blank 0 0) (tile 'blank 1 0) 
-                       (tile 'blank 2 0) (tile 'blank 3 0))
-                 (list (tile 'tree  0 1) (tile 'bush  1 1) 
-                       (tile 'grass 2 1) (tile 'tree  3 1))
-                 (list (tile 'bush  0 2) (tile 'bush  1 2) 
-                       (tile 'tombstone 2 2) (tile 'blank 3 2))
-                 (list (tile 'tree  0 3) (tile 'hut  1 3)
-                       (tile 'tombstone 2 3) (tile 'blank 3 3))))
-
-(define b6 (list (list (tile 'blank 0 0) (tile 'grass 1 0) 
-                       (tile 'bush 2 0) (tile 'blank 3 0))
-                 (list (tile 'hut  0 1) (tile 'grass  1 1) 
-                       (tile 'bush 2 1) (tile 'bush  3 1))
-                 (list (tile 'hut  0 2) (tile 'blank  1 2) 
-                       (tile 'bush 2 2) (tile 'mansion 3 2))
-                 (list (tile 'tree  0 3) (tile 'tree  1 3) 
-                       (tile 'bush 2 3) (tile 'mansion 3 3))))
-
-(define b7 (list (list (tile 'blank 0 0) (tile 'tree 1 0) 
-                       (tile 'house 2 0) (tile 'house 3 0))
-                 (list (tile 'castle  0 1) (tile 'castle  1 1) 
-                       (tile 'blank 2 1) (tile 'mansion  3 1))
-                 (list (tile 'bush  0 2) (tile 'floating-castle  1 2) 
-                       (tile 'floating-castle 2 2) (tile 'mansion 3 2))
-                 (list (tile 'bush  0 3) (tile 'floating-castle  1 3) 
-                       (tile 'tree 2 3) (tile 'tree 3 3))))
-
-(define b8 (list (list (tile 'blank 0 0) (tile 'tree 1 0) 
-                       (tile 'house 2 0) (tile 'house 3 0))
-                 (list (tile 'castle  0 1) (tile 'castle  1 1) 
-                       (tile 'blank 2 1) (tile 'mansion  3 1))
-                 (list (tile 'bush  0 2) (tile 'floating-castle  1 2) 
-                       (tile 'floating-castle 2 2) (tile 'mansion 3 2))
-                 (list (tile 'bush  0 3) (tile 'castle  1 3) 
-                       (tile 'tree 2 3) (tile 'tree 3 3))))
 
 ;gen:input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
@@ -433,7 +345,6 @@
                  (list (tile 'bush 0 3) (tile 'castle 1 3) 
                        (tile 'tree 2 3) (tile 'tree 3 3)))))
 
-
 ; decide-move : board num num symbol -> (values board boolean [symbol-or-false])
 
 ;  Decide whether move is 
@@ -554,7 +465,7 @@
 ; Displays next tile 'v' and reads 'x'  and 'y' coordinate inputs
 
 (define (read-inputs b v)
-  (display-board b)
+  (display-board b symbol->string/tile)
   (printf "Tile - ~a\n" v)
   (printf "Enter exact nonnegative integers x y - \n")
   ;(values (read) (read)))
@@ -648,27 +559,33 @@
 ;display-board-row : list-of-tiles -> list-of-tiles
 ; Displays a row of tiles
 
-(define (display-board-row row)
+(define (display-board-row row SYM->STRING/TILE)
   (cond
-    [(empty? row) empty]
+    [(empty? row) (display "")]
     [(cons? row)
-     (let ([s (symbol->string (tile-v (first row)))])
+     (let ([s (SYM->STRING/TILE (first row))])
        (printf "~a" s)
        (for ([i (range (- 15 (string-length s)))])
          (printf "~a" " "))
        (printf "|"))
-     (display-board-row (rest row))]))
+     (display-board-row (rest row) SYM->STRING/TILE)]))
 
 ;display-board : board -> board
 ; Displays a board of tiles
 
-(define (display-board board)
+(define (display-board board SYM->STRING/TILE)
   (cond
-    [(empty? board) empty]
+    [(empty? board) (display "")]
     [(cons? board)
-     (display-board-row (first board))
+     (display-board-row (first board) SYM->STRING/TILE)
      (printf "\n")
-     (display-board (rest board))]))
+     (display-board (rest board) SYM->STRING/TILE)]))
+;(display-board b (λ (x) (symbol->string (tile-v x))))
+
+; symbol->string/tile : tile -> string
+;  Converts the 'v' field in 'tile' to string
+(define (symbol->string/tile x)
+  (symbol->string (tile-v x)))
 
 ; main-game-loop : num -> void
 ;  Runs the main loop of the game. Runs infinitely.
@@ -676,7 +593,5 @@
   (let loop ([b (generate-board n)])
     (if (not (end-game? b))
         (loop (move b))
-        (printf "End of game!\n ~a" (display-board b)))))
-
-; Runs the main loop
-;(main-game-loop 6)
+        (printf "End of game!\n ~a" 
+                (display-board b symbol->string/tile)))))
