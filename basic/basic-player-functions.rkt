@@ -323,38 +323,6 @@
      (and (member f vlist) #t)]
     [else #f]))
 
-;; --------------------------------------------------------------------
-;; collapse-points : symbol num -> num
-;;  a table of points obtained when 'n' of 'v' tiles are collapsed
-
-(define (collapse-points v n)
-  (cond
-    [(>= n 3) 
-     (case v
-       ['grass 5]
-       ['bush 20]
-       ['tree 100]
-       ['hut 500]
-       ['house 2000]
-       ['mansion 5000]
-       ['castle 20000]
-       ['floating-castle 100000]
-       ['triple-castle 1000000]
-       [else 0])]
-    [(equal? n 1) 
-     (case v
-       ['grass 5]
-       ['bush 20]
-       ['tree 100]
-       ['hut 500]
-       ['house 2000]
-       ['mansion 5000]
-       ['castle 20000]
-       ['floating-castle 100000]
-       ['triple-castle 1000000]
-       [else 0])]
-    [else 0]))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Points Breakdown - Basic
 ;3 Grass	                        Bush        20
@@ -412,6 +380,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Points Breakdown - Proximity
+;2 Grass                                       10
+;2 Bush                                        50
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Points Breakdown - Advanced - TBD
 ;4 Grass	                         Bush*      40
 ;5 Grass	                         Bush*	    45
@@ -424,26 +398,92 @@
 ;4 Trees                            Hut*     1100
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; --------------------------------------------------------------------
+;; collapse-points : symbol num -> num
+;;  a table of points obtained when 'n' of 'v' tiles are collapsed
+
+(define (collapse-points v n)
+  ;(printf "collapse-points - ~a, ~a\n" v n)
+  (cond
+    [(>= n 4)
+     (case v
+       ['grass 40]
+       ['bush 200]
+       ['tree 1000]
+       ['hut 4000]
+       ['house 10000]
+       ['mansion 40000]
+       ['castle 200000]
+       ['floating-castle 2000000]
+       [else (error "collapse-points4")])]
+    [(equal? n 3) 
+     (case v
+       ['grass 20]
+       ['bush 100]
+       ['tree 500]
+       ['hut 2000]
+       ['house 5000]
+       ['mansion 20000]
+       ['castle 100000]
+       ['floating-castle 1000000]
+       [else (error "collapse-points3")])]
+    ;    [(equal? n 3) 
+    ;     (case v
+    ;       ['grass 5]
+    ;       ['bush 20]
+    ;       ['tree 100]
+    ;       ['hut 500]
+    ;       ['house 2000]
+    ;       ['mansion 5000]
+    ;       ['castle 20000]
+    ;       ['floating-castle 100000]
+    ;       ['triple-castle 600000]
+    ;       [else (error "collapse-points3")])]
+    [(equal? n 2)
+     (case v
+       [(grass) 10]
+       [(bush) 50]
+       [(tree) 250]
+       [(hut) 1000]
+       [(house) 2500]
+       [(mansion) 10000]
+       [(castle) 50000]
+       [(floating-castle) 300000]
+       [else (error "collapse-points2")])]
+    [(equal? n 1) 
+     (case v
+       ['grass 5]
+       ['bush 20]
+       ['tree 100]
+       ['hut 500]
+       ['house 2000]
+       ['mansion 5000]
+       ['castle 20000]
+       ['floating-castle 100000]
+       ['triple-castle 1000000]
+       [else (error "collapse-points1")])]
+    [(equal? n 0) 0]
+    [else (error "collapse-points-main")]))
 
 ; points-at* : board num num sybmol -> num
 ;  Collapse board multiple times until no more collapses are possible, 
 ;  and returns points earned
 
 (define (points-at* b x y v p)
-  (let-values ([(bb pp) (replace-points b x y v p 1)])
-    (let loop ([board bb]
-               [point pp]
-               [value v]
-               [count (cadr (count-neighbours bb x y v empty))])
+  (let ([bb (replace b x y v)]) 
+    (let loop1 ([board bb]
+                [point p]
+                [value v]
+                [count (cadr (count-neighbours bb x y v empty))])      
       (if (or (and (symbol=? value 'floating-castle) (> count 3))
               (and (not (symbol=? value 'floating-castle)) (> count 2)))
-          (let*-values 
-              ([(b1 p1) (replace-points (car (replace-neighbours board x y value empty))
-                                        x y (next-tile value) point count)]
-               [(c1) (cadr (count-neighbours b1 x y (next-tile value) empty))]
-               [(v1) (next-tile value)])
-            (loop b1 p1 v1 c1))
-          point))))
+          (let* ([b1 (replace (car (replace-neighbours board x y value empty))
+                               x y (next-tile value))]
+             [p1 (+ point (collapse-points v count))])
+            (let * ([c1 (cadr (count-neighbours b1 x y (next-tile value) empty))]
+                    [v1 (next-tile value)])
+              (loop1 b1 p1 v1 c1)))
+          (+ point (collapse-points v count))))))
 
 ;; replace-points : board num num val num -> num
 ;;  Replaces items and returns score from replacement
@@ -463,9 +503,9 @@
   (define st (tile-v (car (car b))))
   ;(printf "Swap ~a, ~a(v)\n" st v)
   (if (symbol=? st v)
-     -inf.0
-     (- (hash-ref storehouse-points-hash v) 
-        (hash-ref storehouse-points-hash st))))
+      -inf.0
+      (- (hash-ref storehouse-points-hash v) 
+         (hash-ref storehouse-points-hash st))))
 
 ; collapse-crystal : board num num -> num
 ;  Places crystal at ('x','y') and s 'b'
@@ -512,11 +552,11 @@
         (if (symbol=? v 'imperial-robot)
             (hash-ref imp-bot-points-hash (tile-v (get-tile b x y)))
             ;(- p (collapse-points (tile-v (get-tile b x y)) 1))
-;            (let ([pp (- p (collapse-points (tile-v (get-tile b x y)) 1))])
-;              (if (> pp 0) pp 0))
+            ;            (let ([pp (- p (collapse-points (tile-v (get-tile b x y)) 1))])
+            ;              (if (> pp 0) pp 0))
             p)])]))
 
-(define (move-ai b v n)
+(define (choose-move b v n)
   (define st (tile-v (car (car b))))
   (define ptable (generate-points-board b v n))
   ;(display-board/any ptable)
@@ -528,15 +568,15 @@
      (values (ptile-x max-pt) (ptile-y max-pt))]
     [else ;non empty store house
      (define stable (generate-points-board b st n))
-     ;(display-board/any stable)
+     (display-board/any stable)
      (define max-st (find-max stable (ptile -inf.0 0 0) max-tiles?))
-     ;(printf "\nMax - ~a\n" max-st)
+     (printf "\nMax - ~a\n" max-st)
      (cond 
        [(> (ptile-p max-st) (ptile-p max-pt))
         (values (ptile-x max-st) (ptile-y max-st))]
        [else
-         (values (ptile-x max-pt) (ptile-y max-pt))])]))
-       
+        (values (ptile-x max-pt) (ptile-y max-pt))])]))
+
 ;; generate-points-board : board symbol num -> board
 ;;  Plays move 'v' on every tile of 'b', collapses and returns a board
 ;;  of points
@@ -590,8 +630,8 @@
         (define v (cadr l))
         (printf "\nNew Request: Current = ~a\n" v)
         (printf "*********************************\n")
-        (display-board/any b)
-        (define-values (x y) (move-ai b v n))
+        ;(display-board/any b)
+        (define-values (x y) (choose-move b v n))
         (printf "Response - (~a, ~a)\n" x y)
         (printf "*********************************\n")
         ;(define pb (generate-points-board b v n))
@@ -635,5 +675,8 @@
 (define (client h p m u d)
   (define hc (http-conn-open h #:port p))
   (define-values (_ __ port) (http-conn-sendrecv! hc u
-                       #:method m #:data d))
+                                                  #:method m #:data d))
   (port->string port))
+
+;(display-board/any b9)
+;(choose-move b9 'grass 6)
