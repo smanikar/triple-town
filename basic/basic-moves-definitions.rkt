@@ -7,6 +7,9 @@
 ; A tile is (make-tile symbol num num)
 (define-struct tile (v x y) #:transparent)
 
+; A points-tile is (make-tile num num num)
+(define-struct ptile (p x y) #:transparent)
+
 ; Alias for false?
 (define not false?)
 

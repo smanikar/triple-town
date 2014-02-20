@@ -2,6 +2,26 @@
 
 (require "basic-moves-definitions.rkt")
 
+(define storehouse-points-hash
+  (hash 'blank 0
+        'grass 25
+        'bush 145
+        'tree 745
+        'imperial-robot 1745
+        'hut 4245
+        'crystal 14245))
+
+(define imp-bot-points-hash
+  (hash 'grass 4
+        'bush 3
+        'tree 2
+        'hut 1
+        'house 0
+        'mansion -1
+        'castle -2
+        'floating-castle -3
+        'triple-castle -4))
+
 (provide (all-defined-out))
 
 (define b9 

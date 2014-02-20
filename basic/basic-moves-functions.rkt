@@ -41,10 +41,10 @@
   (check-equal? (true? #t) #t)
   (check-equal? (true? #f) #f))
 
-;gen:input : none -> symbol
+;generate-input : none -> symbol
 ; Generates a symbol from 0 to 7 based on weightes
 
-(define (gen-input)
+(define (generate-input)
   (let ([n (random 100)])
     (cond
       [(< n 73) (list-ref input-list 0)]
@@ -287,7 +287,7 @@
 
 (define (swap-store-house b v)
   (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
-      (values (replace b 0 0 v) (gen-input))
+      (values (replace b 0 0 v) (generate-input))
       (values (replace b 0 0 v) (tile-v (get-tile b 0 0)))))
 
 ; values->list : values -> list
@@ -485,7 +485,7 @@
 
 (define (move b)
   (let loop ([board b]
-             [val (gen-input)])
+             [val (generate-input)])
     (let-values ([(x y) (read-inputs  board val)])
       (let-values ([(b1 v1) (decide-move board x y val)])
         (if (true? v1) ;when v1 is #t
@@ -556,6 +556,19 @@
   (check-equal? (end-game? (list (list (tile 'grass 0 0) (tile 'grass 0 1)) 
                                  (list (tile 'grass 1 0) (tile 'grass 1 1))))
                 '()))
+
+;; display-board/any : board -> void
+;;  Prints 'b' based on the type of board it is
+
+(define (display-board/any b)
+  (define t (car (car b)))
+  (cond
+    [(tile? t) (display-board 
+                b 
+                (λ (x) (symbol->string (tile-v x))))]
+    [(ptile? t) (display-board
+                 b
+                 (λ (x) (number->string (ptile-p x))))]))
 
 ;display-board-row : list-of-tiles -> list-of-tiles
 ; Displays a row of tiles

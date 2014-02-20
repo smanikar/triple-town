@@ -3,12 +3,13 @@
 
 #lang racket
 (require web-server/servlet
-         xml)
+         xml
+         net/http-client)
 
 (require "basic-moves-definitions.rkt"
          "basic-moves-functions.rkt"
-         "basic-player-server-definitions.rkt"
-         "basic-player-server-helpers.rkt")
+         "basic-player-definitions.rkt"
+         "basic-player-helpers.rkt")
 
 (provide (all-defined-out))
 
@@ -402,7 +403,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Points Breakdown - Storehouse
-;Storehouse swap                                0
+;1 Grass                                       25
+;1 Bush                                       120
+;1 Tree                                       600
+;1 Hut                                       2500
+;1 Crystal                                  10000
+;1 bot                                       5000
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -453,10 +459,13 @@
 ;; score change. And, the state of the board should not be stored by
 ;; the player. So returning just p.
 
-(define (swap-store-house-points b v p) p)
-;  (if (symbol=? (tile-v (get-tile b 0 0)) 'blank)
-;      (values (replace b 0 0 v) (gen-input) p)
-;      (values (replace b 0 0 v) (tile-v (get-tile b 0 0)) p)))
+(define (swap-store-house-points b v p)
+  (define st (tile-v (car (car b))))
+  ;(printf "Swap ~a, ~a(v)\n" st v)
+  (if (symbol=? st v)
+     -inf.0
+     (- (hash-ref storehouse-points-hash v) 
+        (hash-ref storehouse-points-hash st))))
 
 ; collapse-crystal : board num num -> num
 ;  Places crystal at ('x','y') and s 'b'
@@ -470,6 +479,8 @@
         ;(values b p)
         p
         (points-at* b x y v p))))
+
+;; 
 
 ; decide-move : board num num symbol num -> num
 ;  Decide whether move is 
@@ -499,14 +510,33 @@
        ; everything else
        [else 
         (if (symbol=? v 'imperial-robot)
-            (- p (collapse-points (tile-v (get-tile b x y)) 1))
+            (hash-ref imp-bot-points-hash (tile-v (get-tile b x y)))
+            ;(- p (collapse-points (tile-v (get-tile b x y)) 1))
 ;            (let ([pp (- p (collapse-points (tile-v (get-tile b x y)) 1))])
 ;              (if (> pp 0) pp 0))
             p)])]))
 
-; A points-tile is (make-tile num num num)
-(define-struct ptile (p x y) #:transparent)
-
+(define (move-ai b v n)
+  (define st (tile-v (car (car b))))
+  (define ptable (generate-points-board b v n))
+  ;(display-board/any ptable)
+  (define max-pt (find-max ptable (ptile -inf.0 0 0) max-tiles?))
+  ;(printf "\nMax - ~a\n" max-pt)
+  (cond
+    ; if storehouse is empty
+    [(symbol=? st 'blank)
+     (values (ptile-x max-pt) (ptile-y max-pt))]
+    [else ;non empty store house
+     (define stable (generate-points-board b st n))
+     ;(display-board/any stable)
+     (define max-st (find-max stable (ptile -inf.0 0 0) max-tiles?))
+     ;(printf "\nMax - ~a\n" max-st)
+     (cond 
+       [(> (ptile-p max-st) (ptile-p max-pt))
+        (values (ptile-x max-st) (ptile-y max-st))]
+       [else
+         (values (ptile-x max-pt) (ptile-y max-pt))])]))
+       
 ;; generate-points-board : board symbol num -> board
 ;;  Plays move 'v' on every tile of 'b', collapses and returns a board
 ;;  of points
@@ -535,12 +565,6 @@
                   ([y x])
                   (ACCUM-MAX? max-y y)))))
 
-;; number->string/ptile : ptile -> string
-;;  Converts 'p' field of 'x' to string
-
-(define (number->string/ptile x)
-  (number->string (ptile-p x)))
-
 ;; genrate-xexpr-move-response : HTTP req -> X-expr
 ;;  Generates appropriate X-expr for given input
 
@@ -566,18 +590,20 @@
         (define v (cadr l))
         (printf "\nNew Request: Current = ~a\n" v)
         (printf "*********************************\n")
-        (display-board b symbol->string/tile)
+        (display-board/any b)
+        (define-values (x y) (move-ai b v n))
+        (printf "Response - (~a, ~a)\n" x y)
         (printf "*********************************\n")
-        (define pb (generate-points-board b v n))
-        (display-board pb number->string/ptile)
-        (define t (find-max pb (ptile 0 0 0) max-tiles?))
-        (define x (ptile-x t))
-        (define y (ptile-y t))
+        ;(define pb (generate-points-board b v n))
+        ;(display-board pb number->string/ptile)
+        ;(define t (find-max pb (ptile 0 0 0) max-tiles?))
+        ;(define x (ptile-x t))
+        ;(define y (ptile-y t))
         (cond
-          [(and (equal? x 0) (equal? y 0)) `(store)]
+          [(and (equal? x 0) (equal? y 0)) `(store ())]
           [else
-           `(place (row ((value ,(number->string x))))
-                   (column ((value ,(number->string y)))))])])]))
+           `(place (row ((value ,(number->string y))))
+                   (column ((value ,(number->string x)))))])])]))
 
 ;; --------------------------------------------------------------------
 ;; move-server : http request -> http response
@@ -592,7 +618,11 @@
 ;;  Generates appropriate X-expr for given input
 
 (define (generate-xexpr-variant-response req)
-  `(variant ((value "basic"))))
+  (cond
+    ; if not method GET
+    [(false? (equal? (request-method req) #"GET"))
+     `(variant ((value "error")))]
+    [else `(variant ((value "basic")))])) 
 
 ;; --------------------------------------------------------------------
 ;; variant-server : http request -> http response
@@ -602,3 +632,8 @@
 (define (variant-server req)
   (response/xexpr (generate-xexpr-variant-response req)))
 
+(define (client h p m u d)
+  (define hc (http-conn-open h #:port p))
+  (define-values (_ __ port) (http-conn-sendrecv! hc u
+                       #:method m #:data d))
+  (port->string port))
