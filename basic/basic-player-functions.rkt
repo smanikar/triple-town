@@ -126,9 +126,6 @@
                [`(current() (tile ((value ,t))))
                 (list board (string->symbol t))])])])])))
 
-(define r1
-  "<game><board><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"mansion\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"house\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"grass\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"bush\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row></board><current><tile value=\"crystal\"></tile></current><storehouse><tile value=\"blank\"></tile></storehouse></game>")
-
 (module+ test
   (check-equal? (build-board r1)
                 '(((blank blank blank hut blank blank)
@@ -196,8 +193,6 @@
     [else  #f]))
 
 (module+ test
-  (define in1 "<board><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"mansion\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"house\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"grass\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"bush\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row></board>")
-  (define in2 "<board><row><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row></board>")
   (check-equal? (valid-board? (xml->xexpr (read-xml/element (open-input-string in1)))) #t)
   (check-equal? (valid-board? (xml->xexpr (read-xml/element (open-input-string in2)))) #f)
   )
@@ -216,8 +211,6 @@
     [else #f]))
 
 (module+ test
-  (define in3 "<row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row>")
-  (define in4 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
   (check-equal? (valid-row0? (xml->xexpr (read-xml/element (open-input-string in3)))) #t)
   (check-equal? (valid-row0? (xml->xexpr (read-xml/element (open-input-string in4)))) #f))
 
@@ -236,8 +229,6 @@
     [else #f]))
 
 (module+ test
-  (define in5 "<row><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row>")
-  (define in6 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
   (check-equal? (valid-row? (xml->xexpr (read-xml/element (open-input-string in5)))) #t)
   (check-equal? (valid-row? (xml->xexpr (read-xml/element (open-input-string in6)))) #f))
 
@@ -250,11 +241,6 @@
     [else #f]))
 
 (module+ test
-  (define in7 "<current><tile value =\"crystal\"></tile></current>")
-  (define in8 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
-  (define in9 "<current><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></current>")
-  (define in10 "<current><cell><tile value =\"blank\"></tile></cell></current>")
-  (define in11 "<current value =\"blank\"></current>")
   (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in7)))) #t)
   (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in8)))) #f)
   (check-equal? (valid-current? (xml->xexpr (read-xml/element (open-input-string in9)))) #f)
@@ -270,11 +256,6 @@
     [else #f]))
 
 (module+ test
-  (define in12 "<storehouse><tile value =\"crystal\"></tile></storehouse>")
-  (define in13 "<row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></row>")
-  (define in14 "<storehouse><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"grass\"></tile></cell></storehouse>")
-  (define in15 "<storehouse><cell><tile value =\"blank\"></tile></cell></storehouse>")
-  (define in16 "<storehouse value =\"blank\"></storehouse>")
   (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in12)))) #t)
   (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in13)))) #f)
   (check-equal? (valid-store? (xml->xexpr (read-xml/element (open-input-string in14)))) #f)
@@ -398,6 +379,69 @@
 ;4 Trees                            Hut*     1100
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;(define (collapse-points v n)
+;  ;(printf "collapse-points - ~a, ~a\n" v n)
+;  (cond
+;    [(>= n 4)
+;     (case v
+;       ['grass 40]
+;       ['bush 200]
+;       ['tree 1000]
+;       ['hut 4000]
+;       ['house 10000]
+;       ['mansion 40000]
+;       ['castle 200000]
+;       ['floating-castle 1000000]
+;       [else (error "collapse-points4")])]
+;;   [(equal? n 3) 
+;;     (case v
+;;       ['grass 25]
+;;       ['bush 120]
+;;       ['tree 600]
+;;       ['hut 2500]
+;;       ['house 7000]
+;;       ['mansion 25000]
+;;       ['castle 120000]
+;;       ['floating-castle 1100000]
+;;       [else (error "collapse-points3")])]
+;        [(equal? n 3) 
+;         (case v
+;           ['grass 20]
+;           ['bush 100]
+;           ['tree 500]
+;           ['hut 2000]
+;           ['house 5000]
+;           ['mansion 20000]
+;           ['castle 100000]
+;           ['floating-castle 400000]
+;           ;['triple-castle 600000]
+;           [else (error "collapse-points3")])]
+;    [(equal? n 2)
+;     (case v
+;       [(grass) 10]
+;       [(bush) 40]
+;       [(tree) 200]
+;       [(hut) 1000]
+;       [(house) 4000]
+;       [(mansion) 10000]
+;       [(castle) 40000]
+;       [(floating-castle) 200000]
+;       [else (error "collapse-points2")])]
+;    [(equal? n 1) 
+;     (case v
+;       ['grass 5]
+;       ['bush 20]
+;       ['tree 100]
+;       ['hut 500]
+;       ['house 2000]
+;       ['mansion 5000]
+;       ['castle 20000]
+;       ['floating-castle 100000]
+;       ['triple-castle 1000000]
+;       [else (error "collapse-points1")])]
+;    [(equal? n 0) 0]
+;    [else (error "collapse-points-main")]))
+
 ;; --------------------------------------------------------------------
 ;; collapse-points : symbol num -> num
 ;;  a table of points obtained when 'n' of 'v' tiles are collapsed
@@ -405,107 +449,103 @@
 (define (collapse-points v n)
   ;(printf "collapse-points - ~a, ~a\n" v n)
   (cond
-    [(>= n 4)
-     (case v
-       ['grass 40]
-       ['bush 200]
-       ['tree 1000]
-       ['hut 4000]
-       ['house 10000]
-       ['mansion 40000]
-       ['castle 200000]
-       ['floating-castle 2000000]
-       [else (error "collapse-points4")])]
-    [(equal? n 3) 
-     (case v
-       ['grass 20]
-       ['bush 100]
-       ['tree 500]
-       ['hut 2000]
-       ['house 5000]
-       ['mansion 20000]
-       ['castle 100000]
-       ['floating-castle 1000000]
-       [else (error "collapse-points3")])]
-    ;    [(equal? n 3) 
-    ;     (case v
-    ;       ['grass 5]
-    ;       ['bush 20]
-    ;       ['tree 100]
-    ;       ['hut 500]
-    ;       ['house 2000]
-    ;       ['mansion 5000]
-    ;       ['castle 20000]
-    ;       ['floating-castle 100000]
-    ;       ['triple-castle 600000]
-    ;       [else (error "collapse-points3")])]
-    [(equal? n 2)
-     (case v
-       [(grass) 10]
-       [(bush) 50]
-       [(tree) 250]
-       [(hut) 1000]
-       [(house) 2500]
-       [(mansion) 10000]
-       [(castle) 50000]
-       [(floating-castle) 300000]
-       [else (error "collapse-points2")])]
+    [(equal? n 0) 0]
     [(equal? n 1) 
      (case v
        ['grass 5]
        ['bush 20]
-       ['tree 100]
-       ['hut 500]
-       ['house 2000]
-       ['mansion 5000]
-       ['castle 20000]
-       ['floating-castle 100000]
-       ['triple-castle 1000000]
+       ['tree 80]
+       ['hut 320]
+       ['house 1280]
+       ['mansion 5120]
+       ['castle 25600]
+       ['floating-castle 102400]
+       ['triple-castle 819200]
        [else (error "collapse-points1")])]
-    [(equal? n 0) 0]
-    [else (error "collapse-points-main")]))
+    [(equal? n 2)
+     (* 2 (collapse-points v 1))]
+    [(equal? n 3)
+     (* 4 (collapse-points v 1))]
+    [(>= n 4)
+     (* 8 (collapse-points v 1))]
+    [else (error "collapse-main")]))
+
+(module+ test
+  (check-equal? (collapse-points 'triple-castle 0) 0)
+  (check-equal? (collapse-points 'tree 1) 80)
+  (check-equal? (collapse-points 'house 2) 2560)
+  (check-equal? (collapse-points 'floating-castle 3) 409600)
+  (check-equal? (collapse-points 'bush 4) 160))
+
+
+;; is-collapsable? : board num num symbol num -> 
+;;                       (list boolean [board-or-#f] num num symbol)
+;;  Checks if a board is collapsable and returns collapsed board or #f
+
+(define (collapsable? b x y v p)
+  (define c (cadr (count-neighbours b x y v empty)))
+  (if (and (not (symbol=? v 'triple-castle))
+           (or (and (symbol=? v 'floating-castle) (> c 3))
+               (and (not (symbol=? v 'floating-castle)) (> c 2))))
+      (list (replace (car (replace-neighbours b x y v '())) x y (next-tile v))
+            c
+            (+ p -20 20 (collapse-points v c))
+            v
+            )
+      (list #f c (+ p (collapse-points v (sub1 c))) v)))
+
+(module+ test
+  (check-equal? (collapsable? b2 1 2 'bush 8) (list #f 1 8 'bush))
+  (check-equal? (collapsable? b4 1 2 'bush 0) 
+                (list
+                 (list
+                  (list (tile 'blank 0 0) (tile 'blank 1 0) (tile 'blank 2 0) (tile 'blank 3 0))
+                  (list (tile 'tree 0 1) (tile 'blank 1 1) (tile 'grass 2 1) (tile 'blank 3 1))
+                  (list (tile 'blank 0 2) (tile 'tree 1 2) (tile 'blank 2 2) (tile 'blank 3 2))
+                  (list (tile 'tree 0 3) (tile 'blank 1 3) (tile 'grass 2 3) (tile 'blank 3 3)))
+                 3
+                 80
+                 'bush)))
 
 ; points-at* : board num num sybmol -> num
 ;  Collapse board multiple times until no more collapses are possible, 
 ;  and returns points earned
 
 (define (points-at* b x y v p)
-  (let ([bb (replace b x y v)]) 
-    (let loop1 ([board bb]
-                [point p]
-                [value v]
-                [count (cadr (count-neighbours bb x y v empty))])      
-      (if (or (and (symbol=? value 'floating-castle) (> count 3))
-              (and (not (symbol=? value 'floating-castle)) (> count 2)))
-          (let* ([b1 (replace (car (replace-neighbours board x y value empty))
-                               x y (next-tile value))]
-             [p1 (+ point (collapse-points v count))])
-            (let * ([c1 (cadr (count-neighbours b1 x y (next-tile value) empty))]
-                    [v1 (next-tile value)])
-              (loop1 b1 p1 v1 c1)))
-          (+ point (collapse-points v count))))))
+  (define bb (replace b x y v))
+  ;(define pp (+ p (collapse-points v 1)))
+  (let loop ([l (collapsable? bb x y v p)])
+    (let* ([b1 (first  l)]
+           [c1 (second l)]
+           [p1 (third  l)]
+           [v1 (fourth l)])
+      (if (false? b1)
+          (+ p1 (collapse-points v 1))
+          ;(loop (collapsable? b1 x y v1 (+ p1 (collapse-points v1 c1)) (λ (x) (next-tile x))))))))
+          (loop (collapsable? b1 x y (next-tile v1) p1))))))
 
-;; replace-points : board num num val num -> num
-;;  Replaces items and returns score from replacement
+(module+ test
+  (check-equal? (points-at* b2 0 1 'grass 0) 5)
+  (check-equal? (points-at* b2 0 1 'hut 51) 691)
+  (check-equal? (points-at* b2 2 2 'bush -100) -60)
+  (check-equal? (points-at* t4 0 2 'grass 0) 25)
+  (check-equal? (points-at* t4 1 0 'grass 0) 105))
 
-(define (replace-points b x y v p n)
-  (values (replace b x y v) (+ p (collapse-points v n))))
-
-; swap-store-house : board symbol -> (values board symbol)
-;  Swaps the store house with tile with 'v'
-
-;; As of now, storehouse is not used as a strategy. It is only used as
-;; a last option to store good tiles for later use. So the there is no
-;; score change. And, the state of the board should not be stored by
-;; the player. So returning just p.
+; swap-store-house-points : board symbol -> num
+;  Returns the points from storehouse swap
 
 (define (swap-store-house-points b v p)
   (define st (tile-v (car (car b))))
   ;(printf "Swap ~a, ~a(v)\n" st v)
   (if (symbol=? st v)
       -inf.0
-      (- (hash-ref storehouse-points-hash v) 
-         (hash-ref storehouse-points-hash st))))
+      (+ p (- (hash-ref storehouse-points-hash v) 
+              (hash-ref storehouse-points-hash st)))))
+
+(module+ test
+  (check-equal? (swap-store-house-points b9 'grass 0) -inf.0)
+  (check-equal? (swap-store-house-points t3 'imperial-robot 0) 1600)
+  (check-equal? (swap-store-house-points b1 'crystal -100) 14145))
 
 ; collapse-crystal : board num num -> num
 ;  Places crystal at ('x','y') and s 'b'
@@ -516,19 +556,18 @@
                                         (replace b x y i) x y i empty))
                                  2)) i)])
     (if (false? v)
-        ;(values b p)
         p
         (points-at* b x y v p))))
+
+(module+ test
+  (check-equal? (crystal-collapse-points t4 0 2 0) 25)
+  (check-equal? (crystal-collapse-points t4 1 0 0) 100)
+  (check-equal? (crystal-collapse-points b2 1 0 0) 0))
 
 ;; 
 
 ; decide-move : board num num symbol num -> num
-;  Decide whether move is 
-;   - store-house
-;   - imperial-robot
-;   - crystal
-;   - others
-;  and take corresponding action
+;  Decide whether move is store-house, imperial-robot, crystal
 
 (define (decide-move-points b x y v p n)
   (cond
@@ -551,48 +590,21 @@
        [else 
         (if (symbol=? v 'imperial-robot)
             (hash-ref imp-bot-points-hash (tile-v (get-tile b x y)))
-            ;(- p (collapse-points (tile-v (get-tile b x y)) 1))
-            ;            (let ([pp (- p (collapse-points (tile-v (get-tile b x y)) 1))])
-            ;              (if (> pp 0) pp 0))
             p)])]))
 
-(define (choose-move b v n)
-  (define st (tile-v (car (car b))))
-  (define ptable (generate-points-board b v n))
-  ;(display-board/any ptable)
-  (define max-pt (find-max ptable (ptile -inf.0 0 0) max-tiles?))
-  ;(printf "\nMax - ~a\n" max-pt)
-  (cond
-    ; if storehouse is empty
-    [(symbol=? st 'blank)
-     (values (ptile-x max-pt) (ptile-y max-pt))]
-    [else ;non empty store house
-     (define stable (generate-points-board b st n))
-     (display-board/any stable)
-     (define max-st (find-max stable (ptile -inf.0 0 0) max-tiles?))
-     (printf "\nMax - ~a\n" max-st)
-     (cond 
-       [(> (ptile-p max-st) (ptile-p max-pt))
-        (values (ptile-x max-st) (ptile-y max-st))]
-       [else
-        (values (ptile-x max-pt) (ptile-y max-pt))])]))
+;; greater/ptile : ptile ptile -> ptile
+;; Returns ptile with higher points
 
-;; generate-points-board : board symbol num -> board
-;;  Plays move 'v' on every tile of 'b', collapses and returns a board
-;;  of points
-
-(define (generate-points-board b v n)
-  (for/list ([i (range n)])
-    list
-    (for/list ([j (range n)])
-      list (ptile (decide-move-points b j i v 0 n) j i))))
-
-;; max-tiles? : ptile ptile -> ptile
-;; Returns tile with higher points
-
-(define (max-tiles? x y)
+(define (greater/ptile x y)
   (if (>= (ptile-p x) (ptile-p y))
       x y))
+
+(module+ test
+  (check-equal? (greater/ptile (ptile -inf.0 0 0) (ptile 2 0 0))
+                (ptile 2 0 0))
+  (check-equal? (greater/ptile (ptile 3 1 2) (ptile 1 2 3))
+                (ptile 3 1 2)))
+                
 
 ;; find-max : board (ptile ...) (ptile ptile -> ptile) -> ptile
 ;;  Folds board to find the tile with maximum points
@@ -604,6 +616,41 @@
                 (for/fold ([max-y ACCUM-ZERO])
                   ([y x])
                   (ACCUM-MAX? max-y y)))))
+
+(module+ test
+  (check-equal? (find-max
+                 (list (list (ptile 21 0 0) (ptile -17 1 0))
+                       (list (ptile -inf.0 0 1) (ptile +inf.0 1 1)))
+                 (ptile -inf.0 0 0)
+                 greater/ptile)
+                (ptile +inf.0 1 1))
+  (check-equal? (find-max
+                 (list (list 1 2 3 4)
+                       (list 9 8 7 6)
+                       (list 2 2 11 -11))
+                 0 (λ (x y) (if (> x y) x y)))
+                11))
+
+;; generate-points-board : board symbol num -> board
+;;  Plays move 'v' on every tile of 'b', collapses and returns a board
+;;  of points
+
+(define (generate-points-board b v n)
+  (for/list ([i (range n)])
+    list
+    (for/list ([j (range n)])
+      list (ptile (decide-move-points b j i v 0 n) j i))))
+
+;; choose-move : board symbol num -> (values num num)
+;;  Returns an optimal ('x','y') pair to place 'v' on 'b'
+
+(define (choose-move b v n)
+  ;(define st (tile-v (car (car b))))
+  (define ptable (generate-points-board b v n))
+  ;(display-board/any ptable)
+  (define max-pt (find-max ptable (ptile -inf.0 0 0) greater/ptile))
+  ;(printf "\nMax - ~a\n" max-pt)
+  (values (ptile-x max-pt) (ptile-y max-pt)))
 
 ;; genrate-xexpr-move-response : HTTP req -> X-expr
 ;;  Generates appropriate X-expr for given input
@@ -628,17 +675,12 @@
         (define n 6)
         (define b (populate-board f n))
         (define v (cadr l))
-        (printf "\nNew Request: Current = ~a\n" v)
-        (printf "*********************************\n")
+        ;(printf "\nNew Request: Current = ~a\n" v)
+        ;(printf "*********************************\n")
         ;(display-board/any b)
         (define-values (x y) (choose-move b v n))
-        (printf "Response - (~a, ~a)\n" x y)
-        (printf "*********************************\n")
-        ;(define pb (generate-points-board b v n))
-        ;(display-board pb number->string/ptile)
-        ;(define t (find-max pb (ptile 0 0 0) max-tiles?))
-        ;(define x (ptile-x t))
-        ;(define y (ptile-y t))
+        ;(printf "Response - (~a, ~a)\n" x y)
+        ;(printf "*********************************\n")
         (cond
           [(and (equal? x 0) (equal? y 0)) `(store ())]
           [else
@@ -678,5 +720,8 @@
                                                   #:method m #:data d))
   (port->string port))
 
-;(display-board/any b9)
-;(choose-move b9 'grass 6)
+;(display-board/any t3)
+;(choose-move t3 'grass 4)
+;(decide-move-points t3 1 1 'grass 0 4)
+;(points-at* t4 1 0 'grass 0)
+;(display-board/any (generate-points-board t4 'grass 3))

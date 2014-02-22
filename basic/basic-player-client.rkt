@@ -29,20 +29,21 @@
 
 (define (main-loop n)
   (let loop ([b (generate-board n)]
-             [v (generate-input)])
+             [v (generate-input)]
+             [c 1])
     (cond 
       [(not (end-game? b))
-       (printf "\nNew-tile = ~a\n" v)
-       (display-board b symbol->string/tile)
-       (read)
+       ;(display-board b symbol->string/tile)
+       ;(printf "\nNew-tile = ~a\n" v)
+       ;(read)
        (define-values (x y) (query-move b v))
-       (printf "\nMove - (~a , ~a)\n" x y)
-       (printf "**********************\n")
+       ;(printf "\nMove - (~a , ~a)\n" x y)
+       ;(printf "**********************\n")
        (define-values (b1 v1) (decide-move b x y v))
        (if (true? v1)
-           (loop b1 v1)
-           (loop b1 (generate-input)))]
+           (loop b1 v1 (add1 c))
+           (loop b1 (generate-input) (add1 c)))]
       [else
-       (printf "End of Game\nGood Bye!\n")])))
+       (printf "End of Game\nGood Bye! ~a \n" c)])))
 
 (main-loop 6)

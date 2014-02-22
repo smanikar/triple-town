@@ -24,7 +24,7 @@
 
 ; A list of all possible tiles that can be collapsed by a crystal
 (define crystal-list '(floating-castle castle mansion cathedral 
-                       house church hut tombstone tree bush grass))
+                       house hut tree bush grass))
 
 ;definitions
 (define t1 (list (list (tile 'grass 0 0) (tile 'blank 1 0))
