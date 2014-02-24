@@ -704,7 +704,7 @@
     ; if not method GET
     [(false? (equal? (request-method req) #"GET"))
      `(variant ((value "error")))]
-    [else `(variant ((value "basic")))])) 
+    [else `(variant ((value "basic")))]))
 
 ;; --------------------------------------------------------------------
 ;; variant-server : http request -> http response
