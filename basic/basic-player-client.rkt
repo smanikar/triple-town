@@ -1,49 +1,40 @@
 #lang racket
 
-(require xml
-         )
+(require "basic-player-functions.rkt")
 
-(require "basic-moves-functions.rkt"
-         "basic-player-functions.rkt"
-         "basic-moves-definitions.rkt"
-         "basic-player-helpers.rkt")
+(module+ test
+  (require rackunit))
 
-(define (parse-server-response r)
-  (define e (xml->xexpr (read-xml/element (open-input-string r))))
-  (match e
-    [`(store ()) (values 0 0)]
-    [`(place () (row ((value ,y))) (column ((value ,x))))
-     (values (string->number x) (string->number y))]
-    [else (error "Invalid response\n" e)]))
+(define e2 ;
+  #"<game><board><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"floating-castle\"></tile></cell><cell><tile value =\"floating-castle\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"castle\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row></board><current><tile value =\"crystal\"></tile></current><storehouse><tile value =\"none\"></tile></storehouse></game>")
+(define e3 
+  #"<game><board><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"hut\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"mansion\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"house\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"grass\"></tile></cell><cell><tile value=\"grass\"></tile></cell><cell><tile value=\"bush\"></tile></cell></row><row><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"blank\"></tile></cell><cell><tile value=\"tree\"></tile></cell><cell><tile value=\"blank\"></tile></cell></row></board><current><tile value=\"grass\"></tile></current><storehouse><tile value=\"none\"></tile></storehouse></game>")
+(define e4
+  #"<game><board><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row><row><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row><row><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row></board><current><tile value =\"imperial-robot\"></tile></current><storehouse><tile value =\"none\"></tile></storehouse></game>")
+(define e5
+  #"<game><board><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row><row><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row><row><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"house\"></tile></cell></row></board><current><tile value =\"imperial-robot\"></tile></current><storehouse><tile value =\"imperial-robot\"></tile></storehouse></game>")
+(define e6 ;
+  #"<game><board><row><cell><tile value =\"grass\"></tile></cell><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"hut\"></tile></cell><cell><tile value =\"grass\"></tile></cell><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"hut\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"tree\"></tile></cell><cell><tile value =\"bush\"></tile></cell><cell><tile value =\"mansion\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row><row><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell><cell><tile value =\"blank\"></tile></cell></row></board><current><tile value =\"grass\"></tile></current><storehouse><tile value =\"crystal\"></tile></storehouse></game>")
 
-(define (query-move b v)
-  (define store (tile-v (car (car b))))
-  (define xml-req (string->bytes/utf-8 
-                   (bcs->xml b (symbol->string v) 
-                             (symbol->string (if (symbol=? store 'blank)
-                                                 'none store)))))
-  ;(display xml-req)
-  (if (false? (valid-xml? (bytes->string/utf-8 xml-req)))
-      (error "Invalid XML\n") (bytes->string/utf-8 xml-req))
-  (parse-server-response (client "127.0.0.1" 8080 #"POST" "/move" xml-req)))
+(module+ test
+  (check-equal? 
+   (client "127.0.0.1" 8080 #"POST" "/move" e2)
+   "<place><row value=\"1\"></row><column value=\"2\"></column></place>")
+  (check-equal? 
+   (client "127.0.0.1" 8080 #"POST" "/move" e3)
+   "<store></store>")
+  (check-equal? 
+   (client "127.0.0.1" 8080 #"POST" "/move" e4)
+   "<store></store>")
+  (check-equal? 
+   (client "127.0.0.1" 8080 #"POST" "/move" e5)
+   "<place><row value=\"0\"></row><column value=\"1\"></column></place>")
+  (check-equal? 
+   (client "127.0.0.1" 8080 #"POST" "/move" e6)
+   "<place><row value=\"2\"></row><column value=\"1\"></column></place>"))
 
-(define (main-loop n)
-  (let loop ([b (generate-board n)]
-             [v (generate-input)]
-             [c 1])
-    (cond 
-      [(not (end-game? b))
-       ;(display-board b symbol->string/tile)
-       ;(printf "\nNew-tile = ~a\n" v)
-       ;(read)
-       (define-values (x y) (query-move b v))
-       ;(printf "\nMove - (~a , ~a)\n" x y)
-       ;(printf "**********************\n")
-       (define-values (b1 v1) (decide-move b x y v))
-       (if (true? v1)
-           (loop b1 v1 (add1 c))
-           (loop b1 (generate-input) (add1 c)))]
-      [else
-       (printf "End of Game\nGood Bye! ~a \n" c)])))
-
-(main-loop 6)
+(module+ test
+  (check-equal? (client "127.0.0.1" 8080 #"GET" "/variant" #"void") 
+                "<variant value=\"basic\"></variant>")
+  (check-equal? (client "127.0.0.1" 8080 #"POST" "/variant" #"void") 
+                "<error value=\"invalid-method-or-path\"></error>"))
