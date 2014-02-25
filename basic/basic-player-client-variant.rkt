@@ -15,4 +15,4 @@
   (check-equal? (client "127.0.0.1" 8080 #"GET" "/variant") 
                 "<variant value=\"basic\"></variant>")
   (check-equal? (client "127.0.0.1" 8080 #"POST" "/variant") 
-                "<variant value=\"error\"></variant>"))
+                "<error value=\"invalid-method-or-path\"></error>"))

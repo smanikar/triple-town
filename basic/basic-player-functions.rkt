@@ -243,7 +243,7 @@
                 (ptile 2 0 0))
   (check-equal? (greater/ptile (ptile 3 1 2) (ptile 1 2 3))
                 (ptile 3 1 2)))
-                
+
 
 ;; --------------------------------------------------------------------
 ;; find-max : board (ptile ...) (ptile ptile -> ptile) -> ptile
@@ -592,37 +592,29 @@
 ;; respons/move : HTTP req -> X-expr
 ;;  Generates appropriate X-expr for given input
 
-(define (response/move req)
-  (cond
-    ; if not POST method or POST data is empty
-    [(false? (and (equal? (request-method req) #"POST")
-                  (request-post-data/raw req)))
-     `(move ((value "error-not-method-post")))]
-    ; POST method with valid post data
+(define (response/move e:str)
+  (cond 
+    ; Not valid XML Tree
+    [(false? (valid-xml? e:str)) 
+     `(error ((value "invalid-tree")))]
+    ; Valid XML Tree
     [else
-     (define e:str (bytes->string/utf-8 (request-post-data/raw req)))
-     (cond 
-       ; Not valid XML Tree
-       [(false? (valid-xml? e:str)) 
-        `(move ((value "error-invalid-tree")))]
-       ; Valid XML Tree
+     (define l (build-board e:str))
+     (define f (first l))
+     (define n 6)
+     (define b (populate-board f n))
+     (define v (cadr l))
+     ;(printf "\nNew Request: Current = ~a\n" v)
+     ;(printf "*********************************\n")
+     ;(display-board/any b)
+     (define-values (x y) (choose-move b v n))
+     ;(printf "Response - (~a, ~a)\n" x y)
+     ;(printf "*********************************\n")
+     (cond
+       [(and (equal? x 0) (equal? y 0)) `(store ())]
        [else
-        (define l (build-board e:str))
-        (define f (first l))
-        (define n 6)
-        (define b (populate-board f n))
-        (define v (cadr l))
-        ;(printf "\nNew Request: Current = ~a\n" v)
-        ;(printf "*********************************\n")
-        ;(display-board/any b)
-        (define-values (x y) (choose-move b v n))
-        ;(printf "Response - (~a, ~a)\n" x y)
-        ;(printf "*********************************\n")
-        (cond
-          [(and (equal? x 0) (equal? y 0)) `(store ())]
-          [else
-           `(place (row ((value ,(number->string y))))
-                   (column ((value ,(number->string x)))))])])]))
+        `(place (row ((value ,(number->string y))))
+                (column ((value ,(number->string x)))))])]))
 
 ;; --------------------------------------------------------------------
 ;; move-server : http request -> http response
@@ -630,28 +622,24 @@
 ;; format and that responds with in XML format. 
 ;; There are two kinds of queries to the server - variant and move
 
-(define (move-server req)
-  (response/xexpr (response/move req)))
+(define (server/player req)
+  (response/xexpr
+   (cond 
+     ; if not POST method or POST data is empty
+     [(and (equal? (request-method req) #"POST") 
+           (string=? (url->string (request-uri req)) "/move"))
+      (response/move (bytes->string/utf-8 (request-post-data/raw req)))]
+     [(and (equal? (request-method req) #"GET") 
+           (string=? (url->string (request-uri req)) "/variant"))
+      (response/variant)]
+     [else `(error ((value "invalid-method-or-path")))])))
 
 ;; --------------------------------------------------------------------
 ;; response/variant : HTTP req -> X-expr
 ;;  Generates appropriate X-expr for given input
 
-(define (response/variant req)
-  (cond
-    ; if not method GET
-    [(false? (equal? (request-method req) #"GET"))
-     `(variant ((value "error")))]
-    [else `(variant ((value "basic")))]))
-
-;; --------------------------------------------------------------------
-;; variant-server : http request -> http response
-;; a server that accepts HTTP requests containing a payload (if any) in XML 
-;; format and that responds with in XML format. 
-;; There are two kinds of queries to the server - variant and move
-
-(define (variant-server req)
-  (response/xexpr (response/variant req)))
+(define (response/variant)
+  `(variant ((value "basic"))))
 
 ;; --------------------------------------------------------------------
 
@@ -661,8 +649,3 @@
                                                   #:method m #:data d))
   (port->string port))
 
-;(display-board/any t3)
-;(choose-move t3 'grass 4)
-;(decide-move-points t3 1 1 'grass 0 4)
-;(points-at* t4 1 0 'grass 0)
-;(display-board/any (generate-points-board t4 'grass 3))
