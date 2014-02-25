@@ -69,3 +69,11 @@ look up - trapolining
 Analysing points
 ---------------
 5325-5925
+
+2/25
+---------------------
+Assignment 2 - To do list
+- combine input XML tree check and parse 
+- split files and create hierarchy tree
+- fix include paths
+- change server to accept all paths
