@@ -182,7 +182,7 @@
 
 (module+ test
   (check-equal? (swap-store-house-points b9 'grass 0) -inf.0)
-  (check-equal? (swap-store-house-points t3 'imperial-robot 0) 1600)
+  (check-equal? (swap-store-house-points t3 'imperial-bot 0) 1600)
   (check-equal? (swap-store-house-points b1 'crystal -100) 14145))
 
 ;; --------------------------------------------------------------------
@@ -205,7 +205,7 @@
 
 ;; --------------------------------------------------------------------
 ; decide-move : board num num symbol num -> num
-;  Decide whether move is store-house, imperial-robot, crystal
+;  Decide whether move is store-house, imperial-bot, crystal
 
 (define (decide-move-points b x y v p n)
   (cond
@@ -216,8 +216,8 @@
      (case (tile-v (get-tile b x y))
        [(blank) ; (x,y) is blank
         (cond
-          ; imperial-robot
-          [(symbol=? v 'imperial-robot)
+          ; imperial-bot
+          [(symbol=? v 'imperial-bot)
            p]
           ; crystal
           [(symbol=? v 'crystal)
@@ -226,7 +226,7 @@
            (points-at* b x y v p)])]
        ; everything else
        [else 
-        (if (symbol=? v 'imperial-robot)
+        (if (symbol=? v 'imperial-bot)
             (hash-ref imp-bot-points-hash (tile-v (get-tile b x y)))
             p)])]))
 
@@ -324,11 +324,11 @@
 (define (build-row0 r v)
   (match r
     [`(row () 
-           (cell () (tile ((value ,v0))))
-           (cell () (tile ((value ,v1))))
-           (cell () (tile ((value ,v2))))
-           (cell () (tile ((value ,v3))))
-           (cell () (tile ((value ,v4)))))
+           (cell ((tile ,v0)))
+           (cell ((tile ,v1)))
+           (cell ((tile ,v2)))
+           (cell ((tile ,v3)))
+           (cell ((tile ,v4))))
      (list (string->symbol v)
            (string->symbol v0)
            (string->symbol v1)
@@ -342,11 +342,11 @@
 (module+ test
   (check-equal? (build-row0 
                  '(row () 
-                       (cell () (tile ((value "tree"))))
-                       (cell () (tile ((value "hut"))))
-                       (cell () (tile ((value "blank"))))
-                       (cell () (tile ((value "blank"))))
-                       (cell () (tile ((value "bush")))))
+                       (cell ((tile "tree")))
+                       (cell ((tile "hut")))
+                       (cell ((tile "blank")))
+                       (cell ((tile "blank")))
+                       (cell ((tile "bush"))))
                  "crystal")
                 '(crystal tree hut blank blank bush)))
 
@@ -357,12 +357,12 @@
 (define (build-row r)
   (match r
     [`(row () 
-           (cell () (tile ((value ,v0))))
-           (cell () (tile ((value ,v1))))
-           (cell () (tile ((value ,v2))))
-           (cell () (tile ((value ,v3))))
-           (cell () (tile ((value ,v4))))
-           (cell () (tile ((value ,v5)))))
+           (cell ((tile ,v0)))
+           (cell ((tile ,v1)))
+           (cell ((tile ,v2)))
+           (cell ((tile ,v3)))
+           (cell ((tile ,v4)))
+           (cell ((tile,v5))))
      (list (string->symbol v0)
            (string->symbol v1)
            (string->symbol v2)
@@ -376,12 +376,12 @@
 (module+ test
   (check-equal? (build-row
                  '(row ()
-                       (cell () (tile ((value "mansion"))))
-                       (cell () (tile ((value "tree"))))
-                       (cell () (tile ((value "hut"))))
-                       (cell () (tile ((value "blank"))))
-                       (cell () (tile ((value "blank"))))
-                       (cell () (tile ((value "bush"))))))
+                       (cell ((tile "mansion")))
+                       (cell ((tile "tree")))
+                       (cell ((tile "hut")))
+                       (cell ((tile "blank")))
+                       (cell ((tile "blank")))
+                       (cell ((tile "bush")))))
                 '(mansion tree hut blank blank bush)))
 ;; ---------------------------------------------------
 ;; populate-board: string string string -> (list board symbol)
@@ -389,10 +389,11 @@
 
 (define (build-board e:str)
   (define e:xexpr (xml->xexpr (read-xml/element (open-input-string e:str))))
+  ;(printf "exexpr - \n~a\n" e:xexpr)
   (match e:xexpr
     [`(game () ,b ,c ,s)
      (match s
-       [`(storehouse () (tile ((value ,v))))
+       [`(storehouse ((tile ,v)))
         (match b
           [`(board () ,r0 ,r1 ,r2 ,r3 ,r4 ,r5)
            (define board 
@@ -403,7 +404,7 @@
                    (build-row r4)
                    (build-row r5)))
            (match c
-             [`(current() (tile ((value ,t))))
+             [`(current((tile ,t)))
               (list board (string->symbol t))]
              [_ (raise (make-my-exception 
                         "failed"
@@ -417,16 +418,6 @@
     [_ (raise (make-my-exception 
                "failed"
                (current-continuation-marks)))]))
-
-(module+ test
-  (check-equal? (build-board r1)
-                '(((blank blank blank hut blank blank)
-                   (tree blank blank blank blank blank)
-                   (blank blank blank blank mansion blank)
-                   (blank blank blank house blank blank)
-                   (blank blank blank grass blank bush)
-                   (blank blank blank blank tree blank))
-                  crystal)))
 
 ;; --------------------------------------------------------------------
 ;; respons/move : HTTP req -> X-expr
@@ -454,8 +445,8 @@
      (cond
        [(and (equal? x 0) (equal? y 0)) `(store ())]
        [else
-        `(place (row ((value ,(number->string y))))
-                (column ((value ,(number->string x)))))])]))
+        `(place ((row ,(number->string y))
+                 (column ,(number->string x))))])]))
 
 ;; --------------------------------------------------------------------
 ;; move-server : http request -> http response
@@ -469,6 +460,7 @@
      ; if not POST method or POST data is empty
      [(and (equal? (request-method req) #"POST") 
            (string=? (url->string (request-uri req)) "/move"))
+      ;(printf "string-req - \n~a\n" (bytes->string/utf-8 (request-post-data/raw req)))
       (response/move (bytes->string/utf-8 (request-post-data/raw req)))]
      [(and (equal? (request-method req) #"GET") 
            (string=? (url->string (request-uri req)) "/variant"))

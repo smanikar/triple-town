@@ -15,9 +15,9 @@
            (equal? (tile-y (first r)) 0)) 
       (board->xml/row (rest r))]
      [else
-      (string-append "<cell><tile value =\"" 
+      (string-append "<cell tile=\"" 
                      (symbol->string (tile-v (first r))) 
-                     "\"></tile></cell>"
+                     "\"></cell>"
                      (board->xml/row (rest r)))])))
 
 (define (board->xml b)
@@ -33,6 +33,6 @@
 
 (define (bcs->xml b c s)
   (string-append "<game><board>" (board->xml b) 
-                 "</board><current><tile value =\""
-                 c "\"></tile></current><storehouse><tile value =\""
-                 s "\"></tile></storehouse></game>"))
+                 "</board><current tile=\""
+                 c "\"></current><storehouse tile=\""
+                 s "\"></storehouse></game>"))

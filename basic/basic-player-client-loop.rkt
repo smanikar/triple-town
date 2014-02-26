@@ -1,7 +1,6 @@
 #lang racket
 
-(require xml
-         )
+(require xml)
 
 (require "basic-moves-functions.rkt"
          "basic-player-functions.rkt"
@@ -9,12 +8,13 @@
          "basic-player-helpers.rkt")
 
 (define (parse-server-response r)
+  (printf "res - ~a\n" r)
   (define e (xml->xexpr (read-xml/element (open-input-string r))))
   (match e
     [`(store ()) (values 0 0)]
-    [`(place () (row ((value ,y))) (column ((value ,x))))
+    [`(place ((row ,y) (column ,x)))
      (values (string->number x) (string->number y))]
-    [else (error "Invalid response\n" e)]))
+    [lse (error "Invalid response\n" e)]))
 
 (define (query-move b v)
   (define store (tile-v (car (car b))))
@@ -22,9 +22,10 @@
                    (bcs->xml b (symbol->string v) 
                              (symbol->string (if (symbol=? store 'blank)
                                                  'none store)))))
+  ;(query-move (generate-board 6) 'grass)
   ;(display xml-req)
-  (if (false? (valid-xml? (bytes->string/utf-8 xml-req)))
-      (error "Invalid XML\n") (bytes->string/utf-8 xml-req))
+;  (if (false? (valid-xml? (bytes->string/utf-8 xml-req)))
+;      (error "Invalid XML\n") (bytes->string/utf-8 xml-req))
   (parse-server-response (client/post "127.0.0.1" 8080 "/move" xml-req)))
 
 (define (main-loop n)

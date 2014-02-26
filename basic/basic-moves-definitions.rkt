@@ -20,7 +20,7 @@
                     'tree 
                     'hut 
                     'crystal 
-                    'imperial-robot))
+                    'imperial-bot))
 
 ; A list of all possible tiles that can be collapsed by a crystal
 (define crystal-list '(floating-castle castle mansion cathedral 

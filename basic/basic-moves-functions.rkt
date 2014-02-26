@@ -350,7 +350,7 @@
 
 ;  Decide whether move is 
 ;   - store-house
-;   - imperial-robot
+;   - imperial-bot
 ;   - crystal
 ;   - others
 ;  and take corresponding action
@@ -371,8 +371,8 @@
      (case (tile-v (get-tile b x y))
        [(blank) ; (x,y) is blank
         (cond
-          ; imperial-robot
-          [(symbol=? v 'imperial-robot)
+          ; imperial-bot
+          [(symbol=? v 'imperial-bot)
            (values b v)]
           ; crystal
           [(symbol=? v 'crystal)
@@ -380,7 +380,7 @@
           [else (values (collapse-at* b x y v) #f)])]
        ; everything else
        [else 
-        (if (symbol=? v 'imperial-robot)
+        (if (symbol=? v 'imperial-bot)
             (values (replace b x y 'blank) #f)
             (values b v))])]))
 
@@ -393,16 +393,16 @@
          'grass))
   
   (check-equal? 
-   (values->list (decide-move t1 1 1 'imperial-robot))
+   (values->list (decide-move t1 1 1 'imperial-bot))
    (list (list (list (tile 'grass 0 0) (tile 'blank 1 0))
                (list (tile 'blank 0 1) (tile 'blank 1 1)))
          #f))
   
   (check-equal? 
-   (values->list (decide-move t1 1 0 'imperial-robot))
+   (values->list (decide-move t1 1 0 'imperial-bot))
    (list (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
                (list (tile 'blank 0 1) (tile 'grass 1 1)))
-         'imperial-robot))
+         'imperial-bot))
   
   (check-equal?
    (values->list (decide-move b1 2 1 'crystal))
@@ -446,7 +446,7 @@
    (values->list 
     (decide-move (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
                        (list (tile 'castle 0 1) (tile 'grass 1 1)))
-                 0 1 'imperial-robot))
+                 0 1 'imperial-bot))
    (list
     (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
           (list (tile 'blank 0 1) (tile 'grass 1 1)))
@@ -456,7 +456,7 @@
    (values->list 
     (decide-move (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
                        (list (tile 'tree 0 1) (tile 'grass 1 1)))
-                 0 1 'imperial-robot))
+                 0 1 'imperial-bot))
    (list
     (list (list (tile 'grass 0 0) (tile 'blank 1 0)) 
           (list (tile 'blank 0 1) (tile 'grass 1 1)))

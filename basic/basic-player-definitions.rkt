@@ -11,7 +11,7 @@
         'grass 25
         'bush 145
         'tree 745
-        'imperial-robot 1745
+        'imperial-bot 1745
         'hut 4245
         'crystal 14245))
 
