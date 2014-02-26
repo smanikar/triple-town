@@ -2,6 +2,10 @@
 
 (require "basic-moves-definitions.rkt")
 
+(provide (all-defined-out))
+
+(define-struct (my-exception exn:fail:user) ())
+
 (define storehouse-points-hash
   (hash 'blank 0
         'grass 25
@@ -21,8 +25,6 @@
         'castle -2
         'floating-castle -3
         'triple-castle -4))
-
-(provide (all-defined-out))
 
 (define b9 
   (list

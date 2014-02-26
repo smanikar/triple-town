@@ -18,23 +18,32 @@
 
 (module+ test
   (check-equal? 
-   (client "127.0.0.1" 8080 #"POST" "/move" e2)
+   (client/post "127.0.0.1" 8080 "/move" e2)
    "<place><row value=\"1\"></row><column value=\"2\"></column></place>")
   (check-equal? 
-   (client "127.0.0.1" 8080 #"POST" "/move" e3)
+   (client/post "127.0.0.1" 8080 "/move" e3)
    "<store></store>")
   (check-equal? 
-   (client "127.0.0.1" 8080 #"POST" "/move" e4)
+   (client/post "127.0.0.1" 8080 "/move" e4)
    "<store></store>")
   (check-equal? 
-   (client "127.0.0.1" 8080 #"POST" "/move" e5)
+   (client/post "127.0.0.1" 8080 "/move" e5)
    "<place><row value=\"0\"></row><column value=\"1\"></column></place>")
   (check-equal? 
-   (client "127.0.0.1" 8080 #"POST" "/move" e6)
-   "<place><row value=\"2\"></row><column value=\"1\"></column></place>"))
+   (client/post "127.0.0.1" 8080 "/move" e6)
+   "<place><row value=\"2\"></row><column value=\"1\"></column></place>")
+  (check-equal?
+   (client/post "127.0.0.1" 8080 "/move" "<game></game>")
+   "<error value=\"invalid-tree\"></error>"))
 
 (module+ test
-  (check-equal? (client "127.0.0.1" 8080 #"GET" "/variant" #"void") 
+  (check-equal? (client/get "127.0.0.1" 8080 "/variant") 
                 "<variant value=\"basic\"></variant>")
-  (check-equal? (client "127.0.0.1" 8080 #"POST" "/variant" #"void") 
+  (check-equal? (client/post "127.0.0.1" 8080 "/variant" #"void") 
                 "<error value=\"invalid-method-or-path\"></error>"))
+
+;(client "127.0.0.1" 8080 #"POST" "/move" e2)
+;(client "127.0.0.1" 8080 #"POST" "/move" e3)
+;(client "127.0.0.1" 8080 #"POST" "/move" e4)
+;(client "127.0.0.1" 8080 #"POST" "/move" e5)
+;(client "127.0.0.1" 8080 #"POST" "/move" e6)

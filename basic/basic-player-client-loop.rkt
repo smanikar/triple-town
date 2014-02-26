@@ -25,7 +25,7 @@
   ;(display xml-req)
   (if (false? (valid-xml? (bytes->string/utf-8 xml-req)))
       (error "Invalid XML\n") (bytes->string/utf-8 xml-req))
-  (parse-server-response (client "127.0.0.1" 8080 #"POST" "/move" xml-req)))
+  (parse-server-response (client/post "127.0.0.1" 8080 "/move" xml-req)))
 
 (define (main-loop n)
   (let loop ([b (generate-board n)]

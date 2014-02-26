@@ -334,7 +334,10 @@
            (string->symbol v1)
            (string->symbol v2)
            (string->symbol v3)
-           (string->symbol v4))]))
+           (string->symbol v4))]
+    [_ (raise (make-my-exception 
+               "failed"
+               (current-continuation-marks)))]))
 
 (module+ test
   (check-equal? (build-row0 
@@ -365,7 +368,10 @@
            (string->symbol v2)
            (string->symbol v3)
            (string->symbol v4)
-           (string->symbol v5))]))
+           (string->symbol v5))]
+    [_ (raise (make-my-exception 
+               "failed"
+               (current-continuation-marks)))]))
 
 (module+ test
   (check-equal? (build-row
@@ -382,25 +388,37 @@
 ;;  convert xml to list-of-list-of-tiles
 
 (define (build-board e:str)
-  (define e:xml (read-xml/element (open-input-string e:str)))
-  (define e:xexpr (xml->xexpr e:xml))
-  (let valid-xml? ((e e:xexpr))
-    (match e
-      [`(game () ,b ,c ,s)
-       (match s
-         [`(storehouse () (tile ((value ,v))))
-          (match b
-            [`(board () ,r0 ,r1 ,r2 ,r3 ,r4 ,r5)
-             (define board 
-               (list (build-row0 r0 (if (string=? v "none") "blank" v))
-                     (build-row r1)
-                     (build-row r2)
-                     (build-row r3)
-                     (build-row r4)
-                     (build-row r5)))
-             (match c
-               [`(current() (tile ((value ,t))))
-                (list board (string->symbol t))])])])])))
+  ;(define e:xml (read-xml/element (open-input-string e:str)))
+  (define e:xexpr (xml->xexpr (read-xml/element (open-input-string e:str))))
+  ;(let valid-xml? ((e e:xexpr))
+  (match e:xexpr
+    [`(game () ,b ,c ,s)
+     (match s
+       [`(storehouse () (tile ((value ,v))))
+        (match b
+          [`(board () ,r0 ,r1 ,r2 ,r3 ,r4 ,r5)
+           (define board 
+             (list (build-row0 r0 (if (string=? v "none") "blank" v))
+                   (build-row r1)
+                   (build-row r2)
+                   (build-row r3)
+                   (build-row r4)
+                   (build-row r5)))
+           (match c
+             [`(current() (tile ((value ,t))))
+              (list board (string->symbol t))]
+             [_ (raise (make-my-exception 
+                        "failed"
+                        (current-continuation-marks)))])]
+          [_ (raise (make-my-exception 
+                     "failed"
+                     (current-continuation-marks)))])]
+       [_ (raise (make-my-exception 
+                  "failed"
+                  (current-continuation-marks)))])]
+    [_ (raise (make-my-exception 
+               "failed"
+               (current-continuation-marks)))]))
 
 (module+ test
   (check-equal? (build-board r1)
@@ -593,13 +611,14 @@
 ;;  Generates appropriate X-expr for given input
 
 (define (response/move e:str)
+  ;(printf "~a\n" e:str)
+  (define l 
+    (with-handlers ([exn:fail? (λ (v) `(error ((value "invalid-tree"))))])
+      (build-board e:str)))
+  ;(printf "l = \n~a\n" l)
   (cond 
-    ; Not valid XML Tree
-    [(false? (valid-xml? e:str)) 
-     `(error ((value "invalid-tree")))]
-    ; Valid XML Tree
-    [else
-     (define l (build-board e:str))
+    [(symbol? (first l)) l]
+    [else 
      (define f (first l))
      (define n 6)
      (define b (populate-board f n))
@@ -643,9 +662,16 @@
 
 ;; --------------------------------------------------------------------
 
-(define (client h p m u d)
+(define (client/post h p u d)
   (define hc (http-conn-open h #:port p))
   (define-values (_ __ port) (http-conn-sendrecv! hc u
-                                                  #:method m #:data d))
+                                                  #:method #"POST" #:data d))
   (port->string port))
 
+;; --------------------------------------------------------------------
+
+(define (client/get h p u)
+  (define hc (http-conn-open h #:port p))
+  (define-values (_ __ port) (http-conn-sendrecv! hc u
+                                                  #:method #"GET"))
+  (port->string port))
